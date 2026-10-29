@@ -30,19 +30,22 @@ export type TargetInfo =
   | { entity: 'building'; own: boolean; built: boolean; kind: BuildingKind }
   | { entity: 'tribe'; own: boolean };
 
-export type SmartAction = 'gather' | 'attack' | 'build' | 'settle' | 'deposit' | 'cook' | 'eat';
+export type SmartAction = 'gather' | 'attack' | 'build' | 'settle' | 'deposit' | 'cook' | 'eat' | 'train';
 
 /**
  * Что сделает человек данного вида по правому клику на цель.
  * null — такого действия нет, человек просто подойдёт к цели.
  */
-export function actionFor(kind: UnitKind, target: TargetInfo, armed = kind === 'warrior'): SmartAction | null {
+export function actionFor(kind: UnitKind, target: TargetInfo, armed = kind === 'warrior', trained = false): SmartAction | null {
   // на свою кухню есть может прийти каждый, женщина там ещё и готовит
   if (target.entity === 'building' && target.own && target.built && target.kind === 'kitchen') return kind === 'woman' ? 'cook' : 'eat';
   if (kind === 'child') return null;
   const warrior = kind === 'warrior';
+  if (target.entity === 'building' && target.own && target.built && target.kind === 'training') return warrior && !trained ? 'train' : null;
   switch (target.entity) {
     case 'resource':
+      // обученный воин охраняет племя и ничего не добывает
+      if (trained) return null;
       // воин с копьём ягоды не собирает, житель без копья — собирает
       if (target.kind === 'bush') return warrior && armed ? null : 'gather';
       return 'gather';
@@ -67,6 +70,7 @@ export const ACTION_HINT: Record<SmartAction, string> = {
   deposit: 'Отнести добычу',
   cook: 'Готовить на кухне (или поесть, если повар уже есть)',
   eat: 'Поесть на кухне',
+  train: 'Тренироваться',
 };
 
 // ---------- семьи ----------

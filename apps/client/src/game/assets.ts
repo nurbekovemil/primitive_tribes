@@ -22,6 +22,8 @@ export interface SpriteInfo {
   flag?: [string, number, number];
   /** Где у постройки горит огонь (анимированный building/flame) — от точки опоры. */
   flame?: [number, number];
+  /** Открытая постройка: y основания каждого предмета (кадры <картинка>-props) от точки опоры — по нему сортируется глубина. */
+  props?: number[];
 }
 
 export type Manifest = Record<string, SpriteInfo>;

@@ -295,6 +295,9 @@ export class InputController {
       case 'KeyK':
         g.startPlacing('kitchen');
         break;
+      case 'KeyT':
+        g.startPlacing('training');
+        break;
       case 'KeyE':
         if (g.selectedUnits().length) g.send({ type: 'eat', units: g.selectedUnits().map((u) => u.id) });
         break;
@@ -331,7 +334,7 @@ export class InputController {
       const name = describeName(g, id);
       const units = g.selectedUnits();
       const info = targetInfo(g, id);
-      const action = units.length && info && !units.some((u) => u.id === id) ? units.map((u) => actionFor(u.kind as UnitKind, info, u.armed)).find(Boolean) : null;
+      const action = units.length && info && !units.some((u) => u.id === id) ? units.map((u) => actionFor(u.kind as UnitKind, info, u.armed, u.trained)).find(Boolean) : null;
       text = action ? `${name} — ПКМ: ${ACTION_HINT[action]}` : name;
     }
     const prev = store.get().hint;

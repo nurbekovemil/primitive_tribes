@@ -10,9 +10,12 @@ import {
   RESOURCE_LABEL,
   TIMES,
   unitLabel,
+  ageLook,
+  yearsText,
   entityType,
   marriageProblem,
   KITCHEN,
+  TRAIN,
   type AnimalKind,
   type BuildingKind,
   type FamilyCandidate,
@@ -81,7 +84,10 @@ function UnitCard({ u }: { u: UnitView }) {
         <span className="avatar">{u.chief ? '👑' : ICON[u.kind]}</span>
         <div>
           <b>{u.name}</b> — {u.chief ? `Вождь · ${unitLabel(u).toLowerCase()}` : unitLabel(u)}
-          <div className="muted">{ACTION_LABEL[u.action as UnitAction] ?? u.action}</div>
+          <div className="muted">
+            {ACTION_LABEL[u.action as UnitAction] ?? u.action} · {yearsText(u.age)}
+            {ageLook(u) === 'old' ? ` · ${u.sex === 'm' ? 'старик' : 'старуха'}, ходит медленнее` : ''}
+          </div>
         </div>
       </div>
       <div className="row">
@@ -99,11 +105,13 @@ function UnitCard({ u }: { u: UnitView }) {
         </div>
       )}
       <div className="tip">
-        {u.kind === 'warrior' && !u.armed
-          ? `Житель: рубит лес, собирает ягоды и строит. В кузнице ему можно сделать копьё (${WEAPONS.spear.wood} 🪵) или топор (${WEAPONS.axe.wood} 🪵) — станет воином.`
-          : u.weapon === 'axe'
-            ? 'Воин с топором: бьёт вплотную, но сильнее копейщика. ПКМ по зверю или чужому — атака, по дереву — рубить.'
-            : UNIT_TIPS[u.kind as UnitKind]}
+        {u.kind === 'warrior' && u.trained
+          ? `Воин: прошёл тренировку — быстрее, бьёт сильнее, крепче. Не рубит лес и не собирает: охраняет племя — сам приходит на помощь своим и гонит чужих и хищников с земли племени.`
+          : u.kind === 'warrior' && !u.armed
+            ? `Житель: рубит лес, собирает ягоды и строит. В кузнице ему можно сделать копьё (${WEAPONS.spear.wood} 🪵) или топор (${WEAPONS.axe.wood} 🪵) — станет охотником, а после тренировки на площадке — воином.`
+            : u.kind === 'warrior'
+              ? `Охотник ${u.weapon === 'axe' ? 'с топором: бьёт вплотную, но сильно' : 'с копьём: бросает издалека'}. Рубит лес и охотится. На площадке для тренировок станет воином.`
+              : UNIT_TIPS[u.kind as UnitKind]}
       </div>
     </>
   );
@@ -120,11 +128,12 @@ function UnitsPanel({ units }: { units: UnitView[] }) {
       : 'Выделите ровно двоих: мужчину и женщину';
   const wood = tribe?.wood ?? 0;
   const men = units.filter((u) => u.kind === 'warrior');
-  let forge = false, kitchen = false;
+  let forge = false, kitchen = false, training = false;
   game.state.buildings.forEach((b) => {
     if (b.tribe !== game.tribeId || b.progress < 100) return;
     if (b.kind === 'forge') forge = true;
     if (b.kind === 'kitchen') kitchen = true;
+    if (b.kind === 'training') training = true;
   });
   const hurt = units.filter((u) => u.hp < u.maxHp);
   const build = (kind: BuildingKind, label: string, hot: string) => {
@@ -160,6 +169,7 @@ function UnitsPanel({ units }: { units: UnitView[] }) {
       {build('storage', '📦 Склад', 'V')}
       {build('forge', '⚒️ Кузница', 'N')}
       {build('kitchen', '🍲 Кухня', 'K')}
+      {build('training', '🎯 Площадка', 'T')}
       <Action
         label="🍲 Поесть"
         hot="E"
@@ -167,6 +177,20 @@ function UnitsPanel({ units }: { units: UnitView[] }) {
         disabled={!kitchen ? 'Нет готовой кухни — постройте её' : !hurt.length ? 'Все сыты и здоровы' : null}
         onClick={() => game.send({ type: 'eat', units: hurt.map((u) => u.id) })}
       />
+      {men.some((u) => !u.trained) && (
+        <Action
+          label="🏋️ Тренировать"
+          title={`Мужчины с оружием тренируются ${TRAIN.time} с и становятся воинами: быстрее, сильнее, крепче, живут дольше`}
+          disabled={
+            !training
+              ? 'Нет готовой площадки для тренировок — постройте её'
+              : !men.some((u) => u.armed && !u.trained)
+                ? 'Тренироваться можно только с оружием — сделайте его в кузнице'
+                : null
+          }
+          onClick={() => game.send({ type: 'train', units: men.filter((u) => u.armed && !u.trained).map((u) => u.id) })}
+        />
+      )}
       {craft('spear', '🔱 Копьё')}
       {craft('axe', '🪓 Топор')}
       {units.length === 2 && (
@@ -185,8 +209,8 @@ function UnitsPanel({ units }: { units: UnitView[] }) {
         <b>Выделено: {units.length}</b>
         <span className="muted">
           {' '}
-          🗡️ {units.filter((u) => u.kind === 'warrior' && u.armed).length} · 🧑{' '}
-          {units.filter((u) => u.kind !== 'child' && !(u.kind === 'warrior' && u.armed)).length} · 🧒{' '}
+          🗡️ {units.filter((u) => u.kind === 'warrior' && u.trained).length} · 🧑{' '}
+          {units.filter((u) => u.kind !== 'child' && !(u.kind === 'warrior' && u.trained)).length} · 🧒{' '}
           {units.filter((u) => u.kind === 'child').length}
         </span>
       </div>
@@ -297,7 +321,7 @@ function HutPanel({ id }: { id: string }) {
   );
 }
 
-const BUILDING_ICON: Record<string, string> = { storage: '📦', forge: '⚒️', kitchen: '🍲' };
+const BUILDING_ICON: Record<string, string> = { storage: '📦', forge: '⚒️', kitchen: '🍲', training: '🎯' };
 
 /** Склад, кузница и кухня: прочность или ход стройки и подсказка. */
 function BuildingPanel({ id }: { id: string }) {
@@ -309,7 +333,9 @@ function BuildingPanel({ id }: { id: string }) {
   const tip =
     b.kind === 'storage'
       ? `Каждый склад даёт место ещё ${LIMITS.resPerStorage} еды и ${LIMITS.resPerStorage} дерева. Добытчики несут добычу в ближайшее место: на склад или в ратушу — ставьте склады у дальнего леса.`
-      : kitchen
+      : b.kind === 'training'
+        ? `Мужчины с оружием (выделите их и ПКМ по площадке или кнопка «Тренировать») бегают, бросают копьё в мишень и рубят чучела ${TRAIN.time} с — и становятся воинами: быстрее, бьют сильнее, крепче и живут на ${TRAIN.life} лет дольше. Воины не рубят лес и не собирают — охраняют племя: приходят на помощь своим и гонят чужих.`
+        : kitchen
         ? `Здоровье само не восстанавливается. Раненые (меньше ${KITCHEN.hungryAt * 100}% жизни) сами приходят сюда поесть: мест ${KITCHEN.seats}, остальные ждут в очереди. Любого раненого можно отправить сюда и самому: ПКМ по кухне или кнопка «Поесть» (E). Повар — женщина (выделите её и ПКМ по кухне): носит еду со склада и варит.`
         : `Здесь мужчины делают оружие: копьё (${WEAPONS.spear.wood} 🪵) — бросает издалека и годится для охоты, топор (${WEAPONS.axe.wood} 🪵) — бьёт вплотную, но сильнее. Выделите жителей и нажмите кнопку оружия.`;
   const cook = kitchen && b.cook ? game.state.units.get(b.cook) : undefined;

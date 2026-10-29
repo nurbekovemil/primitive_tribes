@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CRAWL, RUN_K, UNARMED, WEAPONS, type AnimalView, type BuildingView, type ResourceView, type TribeView, type UnitView } from '@game/shared';
+import { CRAWL, RUN_K, UNARMED, ageLook, WEAPONS, type AnimalView, type BuildingView, type ResourceView, type TribeView, type UnitView } from '@game/shared';
 import { applySprite, baseOf, makeSprite, type Manifest } from './assets';
 import { hash2 } from './gfx/random';
 
@@ -12,7 +12,7 @@ export const DEPTH = { ground: -3e6, flat: -2e6, fx: 1e6, fog: 2e6, ghost: 3e6 }
 /**
  * Кадры людей (см. полосы person/*-side.png): 0 — стоит, 1-6 — шаг, 7-8 — удар, 9-10 — рубка, 11-12 — сбор,
  * 13-19 — то же, что 0-6, но с ношей в руках, 20-21 — рубка (взмах и отдача), 22 — оглядывается, задрав голову,
- * 23-28 — бег в атаку (корпус наклонён вперёд).
+ * 23-28 — бег в атаку (корпус наклонён вперёд), 29-31 — сидит на скамье кухни: ждёт, жуёт, откусывает.
  * Спереди и сзади: 0-6, 7-13 с ношей, 14-15 — смотрит влево / вправо.
  */
 export const WALK_FRAMES = [1, 2, 3, 4, 5, 6];
@@ -22,6 +22,14 @@ const WINDUP_FRAME = 7, STRIKE_FRAME = 8;
 /** Сколько секунд держится кадр удара после него и сколько длится замах перед следующим. */
 const STRIKE_HOLD = 0.4, WINDUP_TIME = 0.45;
 const PICK_FRAMES = [11, 12];
+/** Кухня: сидит и ждёт еду; ест — жуёт с мясом в руке и откусывает. [кадр, секунды]. */
+const SIT_FRAME = 29;
+const EAT_SEQ: [number, number][] = [[30, 0.9], [31, 0.4], [30, 0.6], [31, 0.35]];
+const EAT_CYCLE = EAT_SEQ.reduce((t, [, d]) => t + d, 0);
+/** Сдача добычи: ноша ещё в руках, летит или опускается на землю, лежит и тает (секунды от начала). */
+const DROP_HOLD = 0.15, DROP_LAND = 0.4, DROP_FADE = 0.55, DROP_END = 0.85;
+/** Сидящих рисуем поверх картинки кухни (иначе скамья перед ними). */
+const SEAT_DEPTH = 40;
 /** Рубка: долгий замах, быстрый взмах, удар (тут дерево вздрагивает), отдача. [кадр, секунды]. */
 const CHOP_SEQ: [number, number][] = [[9, 0.4], [20, 0.07], [10, 0.24], [21, 0.26]];
 const CHOP_IMPACT = 2;
@@ -174,6 +182,17 @@ export class UnitSprite extends Movable {
   private look: { frame: number; flip: boolean } | null = null;
   private barKey = '';
   private ringKey = '';
+  /** Зелёные плюсики над тем, кто ест и лечится. */
+  private pluses: { t: Phaser.GameObjects.Text; age: number }[] = [];
+  private plusT = 0;
+  /** Сданная ноша: кладут (еду) или бросают (бревно) на землю перед собой. */
+  private readonly dropped: Phaser.GameObjects.Sprite;
+  private dropT = -1;
+  /** Где человек стоял и куда смотрел, когда сдал ношу: она лежит там, даже когда он уходит. */
+  private dropAt = { x: 0, y: 0, dir: 1 };
+  private carryKey = 'item/basket';
+  /** В этом кадре сданная ноша упала на землю (для звука): что именно. */
+  landed: '' | 'wood' | 'food' = '';
 
   constructor(scene: Scene, private readonly m: Manifest) {
     super(scene);
@@ -181,6 +200,7 @@ export class UnitSprite extends Movable {
     this.cloth = makeSprite(scene, m, 'person/man-front-color');
     this.carry = makeSprite(scene, m, 'item/basket');
     this.figure = new Container(scene, 0, 0, [this.body, this.cloth, this.carry]);
+    this.dropped = scene.add.existing(makeSprite(scene, m, 'item/basket')).setVisible(false);
     this.ring = new Graphics(scene);
     this.bar = new Graphics(scene);
     this.name = label(scene, 13);
@@ -215,8 +235,8 @@ export class UnitSprite extends Movable {
     let frame = 0;
     let impact = false;
     if (this.moving) {
-      // в атаку бегут: чаще шаг, сбоку — наклон вперёд (спереди и сзади — тот же шаг, только быстрее)
-      const run = u.action === 'attack';
+      // в атаку и на тренировке бегут: чаще шаг, сбоку — наклон вперёд (спереди и сзади — тот же шаг, только быстрее)
+      const run = u.action === 'attack' || u.action === 'train';
       this.animT += dt * PERSON_STEP_FPS * (run ? RUN_K : 1);
       const frames = run && side ? RUN_FRAMES : WALK_FRAMES;
       frame = frames[Math.floor(this.animT) % frames.length];
@@ -227,6 +247,16 @@ export class UnitSprite extends Movable {
       impact = step === CHOP_IMPACT && this.chopStep !== CHOP_IMPACT;
       this.chopStep = step;
       frame = CHOP_SEQ[step][0];
+    } else if (u.task === 'eat') {
+      this.animT = (this.animT + dt) % EAT_CYCLE;
+      let step = 0;
+      for (let t = this.animT; step < EAT_SEQ.length - 1 && t >= EAT_SEQ[step][1]; step++) t -= EAT_SEQ[step][1];
+      frame = EAT_SEQ[step][0];
+    } else if (u.task === 'drop') {
+      // ноша сначала в руках, потом присел и кладёт её на землю
+      frame = this.dropT >= 0 && this.dropT < DROP_HOLD ? CARRY_FRAME.side : PICK_FRAMES[0];
+    } else if (u.task === 'sit') {
+      frame = SIT_FRAME;
     } else if (u.task === 'pick') {
       this.animT += dt * 1.5;
       frame = PICK_FRAMES[Math.floor(this.animT) % PICK_FRAMES.length];
@@ -261,15 +291,19 @@ export class UnitSprite extends Movable {
     // спереди и сзади только стойка и шаг (кадры 0..6); с ношей — руки прижимают её к груди
     if (!side) frame = Math.min(frame, 6);
     if (carrying) frame += CARRY_FRAME[this.facing];
-    let key = `person/${kind}-${this.facing}`;
+    // по возрасту: молодой без бороды или седой; одежда (слой *-color) та же, что у обычного вида
+    const age = ageLook(u);
+    let key = `person/${kind}${age ? '-' + age : ''}-${this.facing}`;
+    let clothKey = `person/${kind}-${this.facing}-color`;
     if (child && u.growth < CRAWL.until) {
       // малыш ещё не ходит: сидит или ползёт на четвереньках, всегда сбоку
       key = `person/baby-${kind}-side`;
+      clothKey = `${key}-color`;
       frame = this.moving ? 1 + (Math.floor(this.animT * 0.5) % 4) : 0;
       this.figure.scaleX = u.dir < 0 ? -1 : 1;
     }
     applySprite(this.body, this.m, key, frame);
-    applySprite(this.cloth, this.m, `${key}-color`, frame);
+    applySprite(this.cloth, this.m, clothKey, frame);
     this.cloth.setTint(colorNum(color));
     // дыхание: грудь чуть поднимается и опускается
     this.breathT += dt;
@@ -279,7 +313,8 @@ export class UnitSprite extends Movable {
     this.carry.setVisible(carrying);
     if (carrying) {
       const wood = u.carryType === 'wood';
-      applySprite(this.carry, this.m, wood ? 'item/log' : u.action === 'gather' || u.carryType === 'food' ? 'item/basket' : 'item/meat');
+      this.carryKey = wood ? 'item/log' : u.action === 'gather' || u.carryType === 'food' ? 'item/basket' : 'item/meat';
+      applySprite(this.carry, this.m, this.carryKey);
       const k = u.kind === 'woman' ? 1 / 1.08 : 1;
       const [cx, cy] = CARRY_AT[this.facing];
       // покачивается в такт шагу; со спины ноша за телом
@@ -312,8 +347,89 @@ export class UnitSprite extends Movable {
       if (this.name.text !== text) this.name.setText(text);
       this.name.y = -top - 14;
     }
+    this.animateDrop(u, mine, dt);
+    if (!this.moving && (u.task === 'sit' || u.task === 'eat')) this.root.setDepth(this.root.y + SEAT_DEPTH);
+    this.animatePluses(u.task === 'eat' && !this.moving, top, dt);
     this.flash.update(this.body, dt, true);
     return impact;
+  }
+
+  /** Сдал добычу: бревно летит дугой и падает с кувырком, корзину или мясо опускает на землю; потом ноша тает. */
+  private animateDrop(u: UnitView, mine: boolean, dt: number) {
+    this.landed = '';
+    if (u.task === 'drop' && this.dropT < 0) {
+      this.dropT = 0;
+      this.dropAt = { x: this.root.x, y: this.root.y, dir: u.dir < 0 ? -1 : 1 };
+      applySprite(this.dropped, this.m, this.carryKey);
+      this.dropped.setVisible(true);
+    }
+    if (this.dropT < 0) return;
+    const t0 = this.dropT;
+    this.dropT += dt;
+    const t = this.dropT;
+    if (t > DROP_END) {
+      this.dropped.setVisible(false);
+      if (u.task !== 'drop') this.dropT = -1;
+      return;
+    }
+    const wood = this.carryKey === 'item/log';
+    const dir = this.dropAt.dir;
+    const k = u.kind === 'woman' ? 1 / 1.08 : 1;
+    const hx = CARRY_AT.side[0] * k * dir, hy = CARRY_AT.side[1] * k;
+    const gx = dir * (wood ? 34 : 24), gy = -3;
+    const s = Math.min(1, Math.max(0, (t - DROP_HOLD) / (DROP_LAND - DROP_HOLD)));
+    let x: number, y: number, rot: number;
+    if (wood) {
+      // бросок: дуга вверх и вниз, бревно переворачивается; упав — чуть подпрыгивает
+      x = hx + (gx - hx) * s;
+      y = hy + (gy - hy) * s * s - 16 * Math.sin(Math.PI * s);
+      rot = dir * (-0.12 + 1.6 * s);
+      const b = (t - DROP_LAND) / 0.12;
+      if (b > 0 && b < 1) y -= 4 * Math.sin(Math.PI * b);
+    } else {
+      // кладёт: плавно опускает перед собой
+      const e = s * s * (3 - 2 * s);
+      x = hx + (gx - hx) * e;
+      y = hy + (gy - hy) * e;
+      rot = 0;
+    }
+    // пока летит — перед человеком, упав — лежит на земле у его ног
+    this.dropped.setPosition(this.dropAt.x + x, this.dropAt.y + y).setFlipX(dir < 0).setDepth(this.dropAt.y + 1);
+    this.dropped.rotation = rot;
+    // чужую ношу в тумане не видно (видимость человека ставит Game по туману)
+    this.dropped.setVisible(mine || this.root.visible);
+    this.dropped.setAlpha(t < DROP_FADE ? 1 : 1 - (t - DROP_FADE) / (DROP_END - DROP_FADE));
+    this.landed = t0 < DROP_LAND && t >= DROP_LAND ? (wood ? 'wood' : 'food') : '';
+  }
+
+  override destroy() {
+    this.dropped.destroy();
+    super.destroy();
+  }
+
+  private animatePluses(eating: boolean, top: number, dt: number) {
+    this.plusT -= dt;
+    if (eating && this.plusT <= 0) {
+      this.plusT = 0.7 + Math.random() * 0.4;
+      const t = new Text(this.scene, (Math.random() - 0.5) * 16, -top + 4, '+', {
+        fontSize: '16px',
+        fontFamily: 'Trebuchet MS, sans-serif',
+        fontStyle: 'bold',
+        color: '#8be86a',
+        stroke: '#1f4a12',
+        strokeThickness: 3,
+      })
+        .setOrigin(0.5)
+        .setResolution(3);
+      this.root.add(t);
+      this.pluses.push({ t, age: 0 });
+    }
+    for (const p of this.pluses) {
+      p.age += dt;
+      p.t.y -= 22 * dt;
+      p.t.setAlpha(Math.max(0, 1 - p.age / 1.1));
+    }
+    this.pluses = this.pluses.filter((p) => (p.age < 1.1 ? true : (p.t.destroy(), false)));
   }
 }
 
@@ -406,6 +522,7 @@ const BUILDING_LOOK: Record<string, { build: string; main: string; bar: number; 
   // у готовой кузницы дымит труба горна (fire — её верх от точки опоры, печатает tools/art/run.sh buildings)
   forge: { build: 'building/forge-build', main: 'building/forge', bar: -160, smoke: -110, fire: [-29, -148] },
   // кухня под открытым небом: точка опоры — центр очага, дым идёт прямо из огня
+  training: { build: 'building/training-build', main: 'building/training', bar: -130, smoke: -60 },
   kitchen: { build: 'building/kitchen-build', main: 'building/kitchen', bar: -125, smoke: -60, fire: [0, -26] },
 };
 /** Этап стройки по прогрессу: 0, 1, 2 — кадры полосы *-build, 3 — готово. */
@@ -436,6 +553,13 @@ export class BuildingSprite {
   private smokeT = 0;
   /** Постройка вздрагивает от удара молотка. */
   private hitT = 0;
+  /**
+   * Открытые постройки (кухня, площадка) нарисованы слоями: земля лежит под всеми, а каждый предмет
+   * (мишень, чучело, скамья…) сортируется по глубине сам — люди могут ходить и перед ними, и за ними.
+   */
+  private readonly floor: Phaser.GameObjects.Container | null = null;
+  private readonly floorImg: Phaser.GameObjects.Sprite | null = null;
+  private readonly props: { sp: Phaser.GameObjects.Sprite; y: number }[] = [];
 
   constructor(scene: Scene, private readonly m: Manifest, kind: string) {
     this.look = BUILDING_LOOK[kind] ?? BUILDING_LOOK.hut;
@@ -448,7 +572,24 @@ export class BuildingSprite {
     this.flame = f ? makeSprite(scene, m, 'building/flame').setPosition(f[0], f[1]) : null;
     this.bar = new Graphics(scene);
     const [by, brx, bry] = baseOf(m, this.look.main);
-    this.root.add([this.ring, shadow(scene, brx * 0.9, bry * 0.9, 30).setY(by), this.frame, this.tepee, ...(this.flame ? [this.flame] : []), ...this.flag.parts, this.bar]);
+    const floorKey = `${this.look.main}-floor`;
+    if (m[floorKey]) {
+      this.floorImg = makeSprite(scene, m, floorKey);
+      this.floor = scene.add.container(0, 0, [this.floorImg, this.ring]).setDepth(DEPTH.flat + 1);
+      const propsKey = `${this.look.main}-props`;
+      this.props = (m[this.look.main].props ?? []).map((y, i) => ({ sp: scene.add.existing(makeSprite(scene, m, propsKey, i)), y }));
+      this.tepee.setVisible(false);
+      this.root.add([this.frame, ...(this.flame ? [this.flame] : []), ...this.flag.parts, this.bar]);
+    } else {
+      this.root.add([this.ring, shadow(scene, brx * 0.9, bry * 0.9, 30).setY(by), this.frame, this.tepee, ...(this.flame ? [this.flame] : []), ...this.flag.parts, this.bar]);
+    }
+  }
+
+  setVisible(v: boolean) {
+    this.root.setVisible(v);
+    this.floor?.setVisible(v);
+    const built = this.stage === 3;
+    for (const p of this.props) p.sp.setVisible(v && built);
   }
 
   private puff(x: number, y: number, o: Partial<Omit<Puff, 'sp' | 'age'>>) {
@@ -577,7 +718,12 @@ export class BuildingSprite {
     this.animateLove(b, dt);
     this.animateBuild(b, dt);
     if (built) this.flag.update(dt, color);
-    this.flash.update(built ? this.tepee : this.frame, dt);
+    if (this.floor) {
+      this.floor.setPosition(b.x, b.y);
+      for (const p of this.props) p.sp.setPosition(b.x, b.y).setDepth(b.y + p.y);
+      this.floorImg?.setVisible(built);
+    }
+    this.flash.update(built ? (this.floorImg ?? this.tepee) : this.frame, dt);
     if (this.flame) {
       this.flameT += dt * 12;
       if (built) applySprite(this.flame, this.m, 'building/flame', Math.floor(this.flameT) % 6);
@@ -590,7 +736,7 @@ export class BuildingSprite {
     if (!built) applySprite(this.frame, this.m, this.look.build, buildStage(b.progress));
     this.flag.setVisible(built);
     this.flame?.setVisible(built);
-    this.tepee.setVisible(built);
+    this.tepee.setVisible(built && !this.floor);
     this.ring.clear();
     if (selected) ring(this.ring, ...baseOf(this.m, this.look.main), 2.5, 0x9cff6a);
     const y = this.look.bar;
@@ -602,6 +748,8 @@ export class BuildingSprite {
 
   destroy() {
     this.root.destroy();
+    this.floor?.destroy();
+    for (const p of this.props) p.sp.destroy();
   }
 }
 

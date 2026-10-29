@@ -63,6 +63,15 @@ function think(w: World, tribe: Tribe) {
   const cook = kitchen && w.isBuilt(kitchen) && !kitchen.cook ? units.find((u) => u.kind === 'woman' && job(u) !== 'birth') : undefined;
   if (kitchen && cook) cmd({ type: 'act', units: [cook.id], target: kitchen.id });
 
+  // площадка для тренировок после кухни; мужчины с оружием идут учиться и становятся воинами
+  const ground = own.find((b) => b.kind === 'training');
+  if (!ground && kitchen && w.isBuilt(kitchen) && !unfinished && builder && res.wood >= BUILDING_STATS.training.wood + 5) {
+    const spot = findSpot(w, tribe, 'training', own.length);
+    if (spot) cmd({ type: 'build', units: [builder.id], building: 'training', x: spot.x, y: spot.y });
+  }
+  const recruit = units.find((u) => u.kind === 'warrior' && u.armed && !u.trained && job(u) === 'idle');
+  if (recruit && ground && w.isBuilt(ground)) cmd({ type: 'train', units: [recruit.id] });
+
   // оружие для безоружных мужчин: в основном копья, иногда топоры
   const unarmed = units.find((u) => u.kind === 'warrior' && !u.armed && job(u) === 'idle');
   const weapon = Math.random() < 0.7 ? 'spear' : 'axe';
@@ -70,7 +79,8 @@ function think(w: World, tribe: Tribe) {
 
   // работа для бездельников
   for (const u of units) {
-    if (job(u) !== 'idle' || u.kind === 'child') continue;
+    // воины не работают — охраняют племя
+    if (job(u) !== 'idle' || u.kind === 'child' || u.trained) continue;
     if (unfinished) {
       cmd({ type: 'act', units: [u.id], target: unfinished.id });
       continue;

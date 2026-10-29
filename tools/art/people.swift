@@ -61,6 +61,8 @@ struct SP {
   /** Хват ближе к заднему концу древка (для броска). */
   var spearShift: F = 0
   var axe: F? = nil
+  /// Мясо на кости в ближней руке (едят на кухне).
+  var food = false
 }
 
 func side(_ L: Look, _ P: SP) {
@@ -145,6 +147,12 @@ func side(_ L: Look, _ P: SP) {
   if L.spear && P.spear == 1 { spear(hand + dir(P.spearAng) * P.spearShift, P.spearAng) }
   if L.bigAxe && P.spear == 1 { bigAxe(hand, P.spearAng) }
   if let ax = P.axe { axe(hand, ax) }
+  if P.food {
+    // кость торчит из кулака вниз, кусок жареного мяса — над кулаком
+    add([capsule(hand + p(-1, 2), hand + p(-3, 11), 2.4, 2.4), ellipse(hand + p(-4, 12), 3, 2.6), ellipse(hand + p(-1.5, 13), 3, 2.6)], BONE)
+    add([smooth([hand + p(-8, -3), hand + p(-7, -12), hand + p(0, -17), hand + p(7, -13), hand + p(8, -4), hand + p(2, 1)])], 0x8a3a24)
+    add([ellipse(hand + p(-2, -11), 3.5, 2.2)], 0xb85a3a, outline: false)
+  }
   add([capsule(ns, ne, ar.0 + 0.5, ar.1 + 0.5), capsule(ne, nw, ar.1 + 0.5, ar.1), ellipse(hand, hr, hr)], SKIN, halo: true)
   handOut = hand.applying(xf)
 }
@@ -224,6 +232,17 @@ func sidePoses(_ L: Look) -> [SP] {
     P.na = (-0.9 * s, 0.9); P.fa = (0.9 * s, 0.9)
     if L.spear { P.na = (0.55 - 0.1 * s, 0.9); P.spearAng = 1.85 + 0.05 * s }
     if L.bigAxe { P.na = (0.7 - 0.1 * s, 1.5); P.spearAng = 3.3 + 0.05 * s }
+    r.append(P)
+  }
+  // 29-31 — сидит на скамье у очага: ждёт (руки на коленях), жуёт с мясом в руке, откусывает
+  for i in 0..<3 {
+    var P = SP()
+    P.nl = (1.45, 1.5); P.fl = (1.35, 1.5); P.nfr = 0; P.ffr = 0
+    P.lean = 0.18; P.tilt = -0.05; P.spear = 2
+    P.fa = (0.75, 0.55)
+    if i == 0 { P.na = (0.6, 0.75) }
+    if i == 1 { P.na = (0.55, 1.25); P.food = true; P.tilt = -0.02 }
+    if i == 2 { P.na = (0.95, 1.6); P.food = true; P.tilt = 0.14; P.lean = 0.28 }
     r.append(P)
   }
   return r
@@ -416,9 +435,16 @@ let looks: [(String, Look)] = [
   ("boy", Look(scale: 0.6, hs: 1.3, beard: false, hairLen: 0.4, bulk: 0.35)),
   ("girl", Look(scale: 0.58, hs: 1.3, beard: false, dress: true, hairLen: 1.1, hair: 0x452a17, bulk: 0.2)),
 ]
+/// Возраст: молодой мужчина без бороды (-young), седые старики (-old). Одежда у них та же — слой *-color общий с основным видом.
+let GREY: UInt32 = 0x8f8a82
+var ageLooks: [(String, Look, Bool)] = looks.map { ($0.0, $0.1, true) }
+for (name, L) in looks where L.scale >= 0.7 {
+  if L.beard { var y = L; y.beard = false; ageLooks.append((name + "-young", y, false)) }
+  var o = L; o.hair = GREY; ageLooks.append((name + "-old", o, false))
+}
 var json: [String: Any] = [:]
 var handsJson: [String: Any] = [:]
-for (name, L) in looks {
+for (name, L, withColor) in ageLooks {
   let child = L.scale < 0.7
   let (sw, fw, h): (Int, Int, Int) = child ? (104, 88, 128) : (196, 128, 208)
   let ay: F = child ? 122 : 200
@@ -429,13 +455,15 @@ for (name, L) in looks {
   handsJson[name + "-front"] = strip("person/\(name)-front", fp.count, fw, h, F(fw) / 2, ay) { front(L, fp[$0], back: false) }
   handsJson[name + "-back"] = strip("person/\(name)-back", fp.count, fw, h, F(fw) / 2, ay) { front(L, fp[$0], back: true) }
   // слой одежды: в игре красится в цвет племени
+  if withColor {
   tintOf = FUR
   _ = strip("person/\(name)-side-color", sp.count, sw, h, sax, ay) { side(L, sp[$0]) }
   _ = strip("person/\(name)-front-color", fp.count, fw, h, F(fw) / 2, ay) { front(L, fp[$0], back: false) }
   _ = strip("person/\(name)-back-color", fp.count, fw, h, F(fw) / 2, ay) { front(L, fp[$0], back: true) }
   tintOf = nil
+  }
   for (v, n, w, ax) in [("side", sp.count, sw, sax), ("front", fp.count, fw, F(fw) / 2), ("back", fp.count, fw, F(fw) / 2)] {
-    for suffix in ["", "-color"] {
+    for suffix in withColor ? ["", "-color"] : [""] {
       json["person/\(name)-\(v)\(suffix)"] = ["file": "person/\(name)-\(v)\(suffix).png", "frames": n, "w": w, "h": h, "ax": Double(ax) / Double(w), "ay": Double(ay) / Double(h), "scale": 0.5]
     }
   }
@@ -452,7 +480,7 @@ for (name, L) in looks where L.scale < 0.7 {
   tintOf = nil
 }
 saveManifest(json)
-for (k, v) in handsJson.sorted(by: { $0.key < $1.key }) {
+for (k, v) in handsJson.sorted(by: { $0.key < $1.key }) where !k.contains("-young") && !k.contains("-old") {
   let h = v as! [[F]], first = k.hasSuffix("-side") ? 13 : 7
   print("руки с ношей \(k): \(h[first])")
 }

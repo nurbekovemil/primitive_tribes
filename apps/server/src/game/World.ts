@@ -1,4 +1,5 @@
 import {
+  AGE,
   ANIMAL_LABEL,
   ANIMAL_STATS,
   BUILDING_STATS,
@@ -18,6 +19,7 @@ import {
   entityType,
   tribeLimits,
   randomName,
+  yearsText,
   type AnimalKind,
   type BuildingKind,
   type Command,
@@ -45,7 +47,8 @@ export type Job =
   | { type: 'idle' }
   | { type: 'move'; x: number; y: number }
   | { type: 'gather'; res: string; kind: ResourceKind; returning: boolean }
-  | { type: 'attack'; target: string; auto: boolean }
+  /** auto — сам напал (самооборона, охрана); chase — дальше этого за целью не гонится. */
+  | { type: 'attack'; target: string; auto: boolean; chase?: number }
   | { type: 'build'; building: string }
   | { type: 'settle'; building: string }
   | { type: 'birth'; building: string; paid: number }
@@ -56,12 +59,17 @@ export type Job =
   /** Повар на кухне: носит еду со склада и варит порции. */
   | { type: 'cook'; kitchen: string; progress: number }
   /** Раненый идёт поесть: seat — место за очагом (-1 — ещё не сел, ждёт очереди). */
-  | { type: 'eat'; kitchen: string; seat: number };
+  | { type: 'eat'; kitchen: string; seat: number }
+  /** Тренировка на площадке: бег по кругу (lap — точка круга) и бой с мишенью или чучелом; t — сколько идёт этап. */
+  | { type: 'train'; ground: string; progress: number; phase: 'run' | 'drill'; t: number; lap: number };
 
 export interface UnitData {
   hp: number;
   carry: number;
   growth: number;
+  /** Возраст в годах (дробный) и когда умрёт от старости. */
+  age: number;
+  lifespan: number;
   job: Job;
   /** Работа, к которой воин вернётся после самообороны. */
   resume: Job | null;
@@ -73,6 +81,10 @@ export interface UnitData {
   attackedAt: number;
   /** Что делает руками в этом тике (для анимации у клиентов). */
   task: string;
+  /** Сколько ещё секунд кладёт сданную ношу (стоит на месте). */
+  drop: number;
+  /** Когда воин в следующий раз осмотрится, нет ли кому помочь. */
+  guardT: number;
 }
 
 export interface AnimalData {
@@ -240,9 +252,9 @@ export class World {
     for (const a of [...this.state.animals.values()]) if (dist2(a, spot) < WILD_DISTANCE * WILD_DISTANCE) this.state.animals.delete(a.id);
 
     // вождь начинает без оружия — его делают в кузнице
-    const man = this.spawnUnit(tribe, 'warrior', 'm', spot.x - 25, spot.y + 20);
+    const man = this.spawnUnit(tribe, 'warrior', 'm', spot.x - 25, spot.y + 20, AGE.start.m);
     man.chief = true;
-    const woman = this.spawnUnit(tribe, 'woman', 'f', spot.x + 25, spot.y + 20);
+    const woman = this.spawnUnit(tribe, 'woman', 'f', spot.x + 25, spot.y + 20, AGE.start.f);
     man.partner = woman.id;
     woman.partner = man.id;
     if (!bot) {
@@ -320,7 +332,7 @@ export class World {
 
   // ---------- люди ----------
 
-  spawnUnit(tribe: Tribe, kind: UnitKind, sex: Sex, x: number, y: number): Unit {
+  spawnUnit(tribe: Tribe, kind: UnitKind, sex: Sex, x: number, y: number, age = kind === 'child' ? 0 : 20): Unit {
     const p = this.grid.nearestWalkable(x, y) ?? { x, y };
     const st = UNIT_STATS[kind];
     const u = new Unit({
@@ -334,19 +346,25 @@ export class World {
       hp: st.hp,
       maxHp: st.hp,
       growth: kind === 'child' ? 0 : 100,
+      age: Math.floor(age),
       action: 'idle',
     });
+    const [l0, l1] = AGE.life[sex];
     this.state.units.set(u.id, u);
     this.units.set(u.id, {
       hp: st.hp,
       carry: 0,
       growth: kind === 'child' ? 0 : 1,
+      age,
+      lifespan: rand(l0, l1),
       job: { type: 'idle' },
       resume: null,
       path: null,
       pathGoal: null,
       repath: 0,
       cd: 0,
+      drop: 0,
+      guardT: Math.random() * 0.5,
       lastAttacker: '',
       attackedAt: -99,
       task: '',
@@ -558,9 +576,19 @@ export class World {
     setIfChanged(b, 'hp', Math.max(0, Math.ceil(d.hp)));
   }
 
+  /** Вождь умер — вождём становится самый старший мужчина племени. */
+  private passChief(tribeId: string) {
+    let best: Unit | null = null;
+    for (const u of this.state.units.values()) if (u.tribe === tribeId && u.kind === 'warrior' && (!best || u.age > best.age)) best = u;
+    if (!best) return;
+    best.chief = true;
+    this.log(tribeId, `Новый вождь племени — ${best.name} (${yearsText(best.age)}).`, 'good');
+  }
+
   /** Описание убийцы для сообщений. */
   private killerName(sourceId: string): string {
     if (sourceId === 'hunger') return 'от голода';
+    if (sourceId === 'age') return 'от старости';
     const a = this.state.animals.get(sourceId);
     if (a) return `— ${ANIMAL_LABEL[a.kind as AnimalKind].toLowerCase()}`;
     const u = this.state.units.get(sourceId);
@@ -600,9 +628,14 @@ export class World {
           if (b.familyWoman === id) b.familyWoman = '';
         }
       }
-      const who = u.kind === 'warrior' ? 'Погиб воин' : u.kind === 'woman' ? 'Погибла женщина' : 'Погиб ребёнок';
-      this.log(u.tribe, `${who} ${u.name} ${this.killerName(d.lastAttacker)}.`.replace(' .', '.'), 'bad');
+      if (d.lastAttacker === 'age') {
+        this.log(u.tribe, `${u.name} ${u.sex === 'm' ? 'умер' : 'умерла'} от старости в ${yearsText(u.age)}.`, 'bad');
+      } else {
+        const who = u.kind === 'warrior' ? 'Погиб воин' : u.kind === 'woman' ? 'Погибла женщина' : 'Погиб ребёнок';
+        this.log(u.tribe, `${who} ${u.name} ${this.killerName(d.lastAttacker)}.`.replace(' .', '.'), 'bad');
+      }
       this.deleteUnit(id);
+      if (u.chief) this.passChief(u.tribe);
     }
     for (const [id, d] of this.buildings) {
       if (d.hp > 0) continue;
@@ -632,6 +665,7 @@ export class World {
     d.resume = resume;
     d.path = null;
     d.pathGoal = null;
+    d.drop = 0;
     setIfChanged(u, 'action', job.type);
   }
 

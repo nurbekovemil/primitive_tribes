@@ -39,6 +39,8 @@ export const Unit = schema(
     maxHp: t.uint16().default(0),
     /** Рост ребёнка 0..100. */
     growth: t.uint8().default(0),
+    /** Возраст в годах. */
+    age: t.uint8().default(0),
     carry: t.uint8().default(0),
     carryType: t.string().default(''),
     action: t.string().default(''),
@@ -50,6 +52,8 @@ export const Unit = schema(
     armed: t.boolean().default(false),
     /** Оружие: spear, axe или ''. */
     weapon: t.string().default(''),
+    /** Прошёл тренировку — воин. */
+    trained: t.boolean().default(false),
     chief: t.boolean().default(false),
     /** Внутри какой хижины (там его не видно), '' — снаружи. */
     inside: t.string().default(''),

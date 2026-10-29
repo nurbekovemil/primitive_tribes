@@ -1,19 +1,24 @@
 import {
+  AGE,
   ANIMAL_STATS,
   BUILDING_STATS,
   CRAWL,
   DEPOSIT_RADIUS,
   FIRE_SAFE_RADIUS,
+  GUARD,
   KITCHEN,
   LIMITS,
   RESOURCE_STATS,
   RUN_K,
   SPEAR_SAFE,
   TIMES,
+  TRAIN,
   UNARMED,
   UNIT_STATS,
+  VISION,
   WEAPONS,
   WEAPON_LABEL,
+  ageLook,
   entityType,
   type AnimalKind,
   type BuildingKind,
@@ -67,14 +72,17 @@ function goTo(w: World, u: Unit, d: UnitData, x0: number, y0: number, stop: numb
   }
   const next = d.path[0];
   if (!next) return true;
+  // малыши ползут, седые старики ходят медленнее
   const crawl = u.kind === 'child' && u.growth < CRAWL.until ? CRAWL.speed : 1;
-  const speed = UNIT_STATS[u.kind as UnitKind].speed * run * crawl;
+  const old = ageLook(u) === 'old' ? AGE.oldSpeed : 1;
+  const speed = UNIT_STATS[u.kind as UnitKind].speed * run * crawl * old * (u.trained ? TRAIN.speed : 1);
   if (step(w, u, next.x, next.y, speed, dt)) d.path.shift();
   return Math.hypot(x - u.x, y - u.y) <= stop;
 }
 
 /** Сдать ношу. Сколько не влезло (склады полны) — остаётся в руках; возвращает true, если сдал всё. */
-function deposit(w: World, u: Unit, d: UnitData, tribe: Tribe): boolean {
+/** Сдаёт ношу; at — куда (человек поворачивается туда и пару мгновений кладёт или бросает её). */
+function deposit(w: World, u: Unit, d: UnitData, tribe: Tribe, at: { x: number }): boolean {
   if (d.carry > 0) {
     const wood = u.carryType === 'wood';
     const res = w.tribeRes(tribe);
@@ -87,6 +95,8 @@ function deposit(w: World, u: Unit, d: UnitData, tribe: Tribe): boolean {
       w.warnFull(tribe, wood);
       return false;
     }
+    d.drop = TIMES.drop;
+    setIfChanged(u, 'dir', at.x >= u.x ? 1 : -1);
   }
   d.carry = 0;
   setIfChanged(u, 'carry', 0);
@@ -131,7 +141,7 @@ function doGather(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'gat
     if (goTo(w, u, d, drop.x, drop.y, drop.r, dt)) {
       d.path = null;
       // склады полны — человек ждёт с ношей, пока не освободится место
-      if (!deposit(w, u, d, tribe)) return w.setJob(u, { type: 'idle' });
+      if (!deposit(w, u, d, tribe, drop)) return w.setJob(u, { type: 'idle' });
       job.returning = false;
     }
     return;
@@ -170,7 +180,9 @@ function fightStats(u: Unit) {
   const st = UNIT_STATS[u.kind as UnitKind];
   if (u.kind !== 'warrior') return st;
   const wpn = WEAPONS[u.weapon as WeaponKind];
-  return wpn ? { ...st, ...wpn } : { ...st, ...UNARMED };
+  const s = wpn ? { ...st, ...wpn } : { ...st, ...UNARMED };
+  // обученный воин бьёт сильнее
+  return u.trained ? { ...s, damage: s.damage * TRAIN.damage } : s;
 }
 
 function doAttack(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'attack' }>, dt: number) {
@@ -188,7 +200,7 @@ function doAttack(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'att
   const loc = w.locate(job.target)!;
   const range = st.range + loc.r;
   const dd = dist(u, loc);
-  if (job.auto && dd > 400) {
+  if (job.auto && dd > (job.chase ?? 400)) {
     idle(w, u, d);
     return;
   }
@@ -197,7 +209,7 @@ function doAttack(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'att
   if (retreat) {
     d.path = null;
     const k = 1 / Math.max(1, dd), ox = u.x, oy = u.y;
-    step(w, u, u.x + (u.x - loc.x) * k * 40, u.y + (u.y - loc.y) * k * 40, UNIT_STATS.warrior.speed * RUN_K, dt);
+    step(w, u, u.x + (u.x - loc.x) * k * 40, u.y + (u.y - loc.y) * k * 40, UNIT_STATS.warrior.speed * RUN_K * (u.trained ? TRAIN.speed : 1), dt);
     // упёрся (вода, постройка) — бьёт с места
     if (Math.hypot(u.x - ox, u.y - oy) > 0.2) return;
   }
@@ -216,6 +228,128 @@ function doAttack(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'att
     else if (kind === 'unit') w.damageUnit(target as never, dmg, u.id);
     else w.damageBuilding(target as never, dmg * 0.6);
   }
+}
+
+// ---------- тренировка ----------
+
+/** Площадка: круг для бега, мишень для копья и чучела для топора — от центра (совпадает с картинкой building/training). */
+const TRACK = { rx: 84, ry: 34 };
+const TARGET = { x: -72, y: -22 };
+const THROW_SPOTS = [
+  { x: 4, y: -26 },
+  { x: 10, y: -4 },
+  { x: 2, y: 16 },
+];
+const DUMMIES = [
+  { x: 55, y: -18 },
+  { x: 75, y: 8 },
+];
+const LAPS = 10;
+const lapPoint = (b: Building, i: number) => {
+  const a = (i / LAPS) * Math.PI * 2;
+  return { x: b.x + Math.cos(a) * TRACK.rx, y: b.y - 4 + Math.sin(a) * TRACK.ry };
+};
+/** Своё место у мишени или чучела — по id человека, чтобы не толпились. */
+const slot = (u: Unit, n: number) => {
+  let h = 0;
+  for (const c of u.id) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return Math.abs(h) % n;
+};
+
+/**
+ * Тренировка: бегает кругами по площадке, потом бросает копьё в мишень или рубит топором чучело — и снова бегает.
+ * Прошёл всё время — становится воином: быстрее, сильнее, крепче и живёт дольше.
+ */
+function doTrain(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'train' }>, dt: number) {
+  const b = w.state.buildings.get(job.ground);
+  if (!b || b.tribe !== u.tribe || b.kind !== 'training' || !w.isBuilt(b) || u.trained || !u.armed) return idle(w, u, d);
+  if (job.progress === 0 && !goTo(w, u, d, b.x, b.y + 30, BUILDING_STATS.training.radius, dt)) return;
+  job.t += dt;
+  job.progress += dt / TRAIN.time;
+  if (job.phase === 'run') {
+    const p = lapPoint(b, job.lap);
+    if (goTo(w, u, d, p.x, p.y, 10, dt, RUN_K)) job.lap = (job.lap + 1) % LAPS;
+    if (job.t >= TRAIN.runTime) {
+      job.phase = 'drill';
+      job.t = 0;
+    }
+  } else {
+    const spear = u.weapon === 'spear';
+    const target = spear ? TARGET : DUMMIES[slot(u, DUMMIES.length)];
+    const spot = spear ? THROW_SPOTS[slot(u, THROW_SPOTS.length)] : { x: target.x - 18, y: target.y + 2 };
+    if (goTo(w, u, d, b.x + spot.x, b.y + spot.y, 5, dt)) {
+      setIfChanged(u, 'dir', target.x > spot.x ? 1 : -1);
+      d.task = 'drill';
+      if (d.cd <= 0) {
+        d.cd = fightStats(u).cooldown;
+        const tx = b.x + target.x, ty = b.y + target.y;
+        w.events.fx(u.id, spear ? [Math.round(u.x), Math.round(u.y - 14), Math.round(tx), Math.round(ty - 16)] : null);
+      }
+    }
+    if (job.t >= TRAIN.drillTime) {
+      job.phase = 'run';
+      job.t = 0;
+    }
+  }
+  if (job.progress < 1) return;
+  u.trained = true;
+  const hp = Math.round(UNIT_STATS.warrior.hp * TRAIN.hp);
+  d.hp += hp - u.maxHp;
+  u.maxHp = hp;
+  setIfChanged(u, 'hp', Math.ceil(d.hp));
+  d.lifespan += TRAIN.life;
+  w.log(u.tribe, `${u.name} прошёл тренировку и стал воином! Он быстрее, сильнее и крепче. Воины охраняют племя и не работают.`, 'good');
+  idle(w, u, d);
+}
+
+// ---------- охрана ----------
+
+/** Хищник, который охотится (не сыт) или разозлён. */
+function hostileAnimal(w: World, id: string) {
+  const a = w.state.animals.get(id), ad = a && w.animals.get(id);
+  return !!a && !!ad && ((ANIMAL_STATS[a.kind as AnimalKind].aggro > 0 && ad.fed <= 0) || ad.angerT > 0);
+}
+
+/**
+ * Обученный воин охраняет племя: идёт на помощь своим, на кого напали хищник или чужие, и гонит
+ * чужих людей и хищников, которых видит на земле племени. Отбился — возвращается на место.
+ */
+function guard(w: World, u: Unit, d: UnitData, tribe: Tribe, dt: number) {
+  if (!u.trained || !u.armed || u.inside) return;
+  const t = d.job.type;
+  if (t !== 'idle' && t !== 'move' && t !== 'build' && t !== 'deposit') return;
+  d.guardT -= dt;
+  if (d.guardT > 0) return;
+  d.guardT = GUARD.every;
+  let best = '', bestD = GUARD.help * GUARD.help;
+  const consider = (id: string) => {
+    const loc = w.locate(id);
+    if (!loc) return;
+    const dd = dist2(loc, u);
+    if (dd < bestD) {
+      bestD = dd;
+      best = id;
+    }
+  };
+  // свои, на кого только что напали
+  for (const m of w.state.units.values()) {
+    if (m.tribe !== u.tribe || m === u) continue;
+    const md = w.units.get(m.id);
+    if (!md || w.time - md.attackedAt > 3) continue;
+    const a = md.lastAttacker;
+    const enemy = w.state.units.get(a);
+    if (w.state.animals.has(a) || (enemy && enemy.tribe !== u.tribe)) consider(a);
+  }
+  // чужие люди и хищники, которых видно на земле племени
+  if (!best) {
+    bestD = VISION.warrior * VISION.warrior;
+    const border2 = tribe.border * tribe.border;
+    for (const e of w.state.units.values()) if (e.tribe !== u.tribe && !e.inside && dist2(e, tribe) < border2) consider(e.id);
+    for (const a of w.state.animals.values()) if (dist2(a, tribe) < border2 && hostileAnimal(w, a.id)) consider(a.id);
+  }
+  if (!best) return;
+  const resume: Job = t === 'idle' || t === 'move' ? { type: 'move', x: u.x, y: u.y } : d.job;
+  w.setJob(u, { type: 'attack', target: best, auto: true, chase: GUARD.chase }, resume);
 }
 
 /** Ближайшая готовая кузница племени. */
@@ -293,6 +427,8 @@ function doBuild(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'buil
           ? `Склад построен! Места под еду и дерево стало больше, добыча сносится сюда, если он ближе ратуши.`
           : b.kind === 'forge'
             ? 'Кузница построена! Выделите жителей и сделайте им копья или топоры.'
+            : b.kind === 'training'
+              ? 'Площадка для тренировок построена! Выделите мужчин с оружием и кликните ПКМ по площадке — после тренировки они станут воинами.'
             : b.kind === 'kitchen'
               ? 'Кухня построена! Выделите женщину и кликните ПКМ по кухне — она станет поваром. Раненые сами придут сюда поесть.'
             : 'Хижина построена! Граница племени раздвинулась, места для людей стало больше. Заселите сюда семью.',
@@ -445,7 +581,7 @@ function doCook(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'cook'
   if (d.carry > 0 && u.carryType === 'wood') {
     // дерево из рук — сначала на склад
     const drop = dropPoint(w, u, tribe);
-    if (goTo(w, u, d, drop.x, drop.y, drop.r, dt)) deposit(w, u, d, tribe);
+    if (goTo(w, u, d, drop.x, drop.y, drop.r, dt)) deposit(w, u, d, tribe, drop);
     return;
   }
   if (d.carry > 0) {
@@ -516,9 +652,10 @@ function doEat(w: World, u: Unit, d: UnitData, job: Extract<Job, { type: 'eat' }
   const seat = KITCHEN_SEATS[job.seat];
   if (!goTo(w, u, d, b.x + seat.x, b.y + seat.y, 5, dt)) return;
   setIfChanged(u, 'dir', seat.x > 0 ? -1 : 1);
-  // порций нет — сидит и ждёт, пока повар сварит
+  // сидит на скамье; порций нет — ждёт, пока повар сварит
+  d.task = 'sit';
   if (bd.meals <= 0.001) return;
-  d.task = 'pick';
+  d.task = 'eat';
   const perMeal = KITCHEN.mealHeal * u.maxHp;
   const heal = Math.min(u.maxHp * KITCHEN.eatRate * dt, u.maxHp - d.hp, bd.meals * perMeal);
   d.hp += heal;
@@ -602,10 +739,24 @@ function reactToDanger(w: World, u: Unit, d: UnitData) {
   if (hunted && !w.inFireZone(u)) w.setJob(u, { type: 'flee' });
 }
 
+/** Годы идут: детство — быстрее (за TIMES.growUp до AGE.adult лет), взрослые стареют на год за AGE.yearSec; срок вышел — умирает. */
+function ageUnit(u: Unit, d: UnitData, dt: number) {
+  d.age += u.kind === 'child' ? (dt / TIMES.growUp) * AGE.adult : dt / AGE.yearSec;
+  if (u.kind === 'child') d.age = Math.min(d.age, AGE.adult - 0.01);
+  setIfChanged(u, 'age', Math.floor(d.age));
+  if (d.age >= d.lifespan && d.hp > 0) {
+    d.hp = 0;
+    d.lastAttacker = 'age';
+    setIfChanged(u, 'hp', 0);
+  }
+}
+
 function growChild(w: World, u: Unit, d: UnitData, dt: number) {
   d.growth = Math.min(1, d.growth + dt / TIMES.growUp);
   setIfChanged(u, 'growth', Math.floor(d.growth * 100));
   if (d.growth < 1) return;
+  d.age = AGE.adult;
+  setIfChanged(u, 'age', AGE.adult);
   const kind: UnitKind = u.sex === 'm' ? 'warrior' : 'woman';
   u.kind = kind;
   // взрослым нужна своя хижина и своя семья
@@ -628,10 +779,19 @@ export function updateUnit(w: World, u: Unit, dt: number) {
   const tribe = w.state.tribes.get(u.tribe);
   if (!d || !tribe) return;
   d.cd = Math.max(0, d.cd - dt);
+  ageUnit(u, d, dt);
   if (u.kind === 'child') growChild(w, u, d, dt);
   if (!u.inside) reactToDanger(w, u, d);
+  guard(w, u, d, tribe, dt);
   goEatIfHurt(w, u, d);
   d.task = '';
+  if (d.drop > 0) {
+    // кладёт сданную ношу: пару мгновений стоит на месте
+    d.drop -= dt;
+    d.task = 'drop';
+    setIfChanged(u, 'task', d.task);
+    return;
+  }
 
   const job = d.job;
   switch (job.type) {
@@ -644,8 +804,9 @@ export function updateUnit(w: World, u: Unit, dt: number) {
     case 'deposit': {
       const drop = dropPoint(w, u, tribe);
       if (goTo(w, u, d, drop.x, drop.y, drop.r, dt)) {
-        deposit(w, u, d, tribe);
+        // сначала idle: смена работы сбрасывает d.drop
         idle(w, u, d);
+        deposit(w, u, d, tribe, drop);
       }
       break;
     }
@@ -669,6 +830,9 @@ export function updateUnit(w: World, u: Unit, dt: number) {
       break;
     case 'eat':
       doEat(w, u, d, job, dt);
+      break;
+    case 'train':
+      doTrain(w, u, d, job, dt);
       break;
     case 'flee':
       if (goTo(w, u, d, tribe.x, tribe.y, FIRE_SAFE_RADIUS * 0.4, dt)) w.setJob(u, { type: 'idle' });

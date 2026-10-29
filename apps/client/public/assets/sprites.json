@@ -165,6 +165,13 @@
     ],
     "frames" : 1,
     "h" : 340,
+    "props" : [
+      -36,
+      -28,
+      0,
+      -6,
+      22
+    ],
     "scale" : 0.5,
     "w" : 420
   },
@@ -173,6 +180,24 @@
     "ay" : 0.69411764705882351,
     "file" : "building\/kitchen-build.png",
     "frames" : 3,
+    "h" : 340,
+    "scale" : 0.5,
+    "w" : 420
+  },
+  "building\/kitchen-floor" : {
+    "ax" : 0.5,
+    "ay" : 0.69411764705882351,
+    "file" : "building\/kitchen-floor.png",
+    "frames" : 1,
+    "h" : 340,
+    "scale" : 0.5,
+    "w" : 420
+  },
+  "building\/kitchen-props" : {
+    "ax" : 0.5,
+    "ay" : 0.69411764705882351,
+    "file" : "building\/kitchen-props.png",
+    "frames" : 5,
     "h" : 340,
     "scale" : 0.5,
     "w" : 420
@@ -259,6 +284,58 @@
     "h" : 370,
     "scale" : 0.5,
     "w" : 460
+  },
+  "building\/training" : {
+    "ax" : 0.5,
+    "ay" : 0.66666666666666663,
+    "base" : [
+      0,
+      95,
+      39.899999999999999
+    ],
+    "file" : "building\/training.png",
+    "flag" : [
+      "ribbon",
+      17,
+      -58
+    ],
+    "frames" : 1,
+    "h" : 300,
+    "props" : [
+      -22,
+      -18,
+      -4,
+      8
+    ],
+    "scale" : 0.5,
+    "w" : 440
+  },
+  "building\/training-build" : {
+    "ax" : 0.5,
+    "ay" : 0.66666666666666663,
+    "file" : "building\/training-build.png",
+    "frames" : 3,
+    "h" : 300,
+    "scale" : 0.5,
+    "w" : 440
+  },
+  "building\/training-floor" : {
+    "ax" : 0.5,
+    "ay" : 0.66666666666666663,
+    "file" : "building\/training-floor.png",
+    "frames" : 1,
+    "h" : 300,
+    "scale" : 0.5,
+    "w" : 440
+  },
+  "building\/training-props" : {
+    "ax" : 0.5,
+    "ay" : 0.66666666666666663,
+    "file" : "building\/training-props.png",
+    "frames" : 4,
+    "h" : 300,
+    "scale" : 0.5,
+    "w" : 440
   },
   "item\/basket" : {
     "ax" : 0.5,
@@ -584,11 +661,38 @@
     "scale" : 0.5,
     "w" : 128
   },
+  "person\/axeman-king-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-old-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
   "person\/axeman-king-side" : {
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/axeman-king-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -597,7 +701,61 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/axeman-king-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-king-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-young-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-old-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -606,7 +764,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/axeman-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -615,7 +773,34 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/axeman-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-young-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -696,7 +881,7 @@
     "ax" : 0.42307692307692307,
     "ay" : 0.953125,
     "file" : "person\/boy-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 128,
     "scale" : 0.5,
     "w" : 104
@@ -705,7 +890,7 @@
     "ax" : 0.42307692307692307,
     "ay" : 0.953125,
     "file" : "person\/boy-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 128,
     "scale" : 0.5,
     "w" : 104
@@ -750,7 +935,7 @@
     "ax" : 0.42307692307692307,
     "ay" : 0.953125,
     "file" : "person\/girl-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 128,
     "scale" : 0.5,
     "w" : 104
@@ -759,7 +944,7 @@
     "ax" : 0.42307692307692307,
     "ay" : 0.953125,
     "file" : "person\/girl-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 128,
     "scale" : 0.5,
     "w" : 104
@@ -836,11 +1021,38 @@
     "scale" : 0.5,
     "w" : 128
   },
+  "person\/man-king-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-old-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
   "person\/man-king-side" : {
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/man-king-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -849,7 +1061,61 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/man-king-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-king-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-young-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-old-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -858,7 +1124,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/man-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -867,7 +1133,34 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/man-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-young-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -944,11 +1237,38 @@
     "scale" : 0.5,
     "w" : 128
   },
+  "person\/warrior-king-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-old-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
   "person\/warrior-king-side" : {
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/warrior-king-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -957,7 +1277,61 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/warrior-king-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-king-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-young-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-old-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -966,7 +1340,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/warrior-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -975,7 +1349,34 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/warrior-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-young-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-young-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-young-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-young-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-young-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-young-side.png",
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -1016,6 +1417,33 @@
     "scale" : 0.5,
     "w" : 128
   },
+  "person\/woman-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-old-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
   "person\/woman-queen-back" : {
     "ax" : 0.5,
     "ay" : 0.96153846153846156,
@@ -1052,11 +1480,38 @@
     "scale" : 0.5,
     "w" : 128
   },
+  "person\/woman-queen-old-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-old-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-old-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-old-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-old-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-old-side.png",
+    "frames" : 32,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
   "person\/woman-queen-side" : {
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/woman-queen-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -1065,7 +1520,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/woman-queen-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -1074,7 +1529,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/woman-side.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196
@@ -1083,7 +1538,7 @@
     "ax" : 0.30612244897959184,
     "ay" : 0.96153846153846156,
     "file" : "person\/woman-side-color.png",
-    "frames" : 29,
+    "frames" : 32,
     "h" : 208,
     "scale" : 0.5,
     "w" : 196

@@ -8,7 +8,7 @@ export function TopBar() {
   if (!tribe) return null;
   const units = game.myUnits();
   const count = (k: string) => units.filter((u) => u.kind === k).length;
-  const isWarrior = (u: UnitView) => u.kind === 'warrior' && u.armed;
+  const isWarrior = (u: UnitView) => u.kind === 'warrior' && u.trained;
   const isCitizen = (u: UnitView) => u.kind !== 'child' && !isWarrior(u);
   const idle = units.filter((u) => u.kind !== 'child' && u.action === 'idle');
   let huts = 0;
@@ -35,7 +35,7 @@ export function TopBar() {
         👥 <b>{units.length}</b>/{tribe.popCap}
       </div>
       <div className="sep" />
-      <button title="Выделить всех воинов (мужчины с копьём или топором)" onClick={() => game.selectGroup(isWarrior)}>
+      <button title="Выделить всех воинов (обученных на площадке для тренировок)" onClick={() => game.selectGroup(isWarrior)}>
         🗡️ Воины {units.filter(isWarrior).length}
       </button>
       <button title="Выделить всех жителей: женщин и мужчин без оружия" onClick={() => game.selectGroup(isCitizen)}>

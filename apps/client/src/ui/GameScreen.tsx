@@ -32,7 +32,7 @@ function Hint() {
   );
 }
 
-const PLACE_NAME: Record<BuildingKind, string> = { hut: 'хижины', storage: 'склада', forge: 'кузницы', kitchen: 'кухни' };
+const PLACE_NAME: Record<BuildingKind, string> = { hut: 'хижины', storage: 'склада', forge: 'кузницы', kitchen: 'кухни', training: 'площадки для тренировок' };
 
 function PlacingBanner() {
   const placing = useStore((s) => s.placing);

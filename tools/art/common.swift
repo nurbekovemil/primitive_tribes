@@ -97,10 +97,17 @@ var parts: [Part] = []
 var xf = CGAffineTransform.identity
 var gradA = p(0, 0), gradB = p(0, 0)
 
+/// Слои открытых построек: детали рисуются в слой curLayer (0 — земля, 1… — предметы); если задан want,
+/// в картинку попадает только этот слой — так землю и каждый предмет можно сортировать по глубине отдельно.
+var curLayer = 0
+var want: Int? = nil
+
 func add(_ ps: [CGPath], _ c: UInt32, outline: Bool = true, halo: Bool = false) {
+  if let w = want, w != curLayer { return }
   parts.append(Part(paths: ps.map { $0.copy(using: &xf)! }, color: c, outline: outline, halo: halo))
 }
 func mark(_ pts: [CGPoint], _ c: UInt32, _ w: F) {
+  if let l = want, l != curLayer { return }
   let path = CGMutablePath()
   path.addLines(between: pts)
   let k = sqrt(abs(xf.a * xf.d - xf.b * xf.c))

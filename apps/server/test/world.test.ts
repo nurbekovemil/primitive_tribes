@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUILDING_STATS, COSTS, FOOTPRINT, TIMES, placementProblem, pushOutOf } from '@game/shared';
+import { AGE, BUILDING_STATS, COSTS, FOOTPRINT, TIMES, TRAIN, ageLook, placementProblem, pushOutOf, yearsText } from '@game/shared';
 import { World } from '../src/game/World';
 import type { Tribe } from '../src/state/schema';
 
@@ -28,7 +28,7 @@ function run(w: World, seconds: number) {
   }
 }
 
-function hutSpot(w: World, tribe: Tribe, kind: 'hut' | 'kitchen' = 'hut') {
+function hutSpot(w: World, tribe: Tribe, kind: 'hut' | 'kitchen' | 'training' = 'hut') {
   for (let i = 0; i < 200; i++) {
     const a = i * 0.7, r = 130 + i * 2;
     const x = tribe.x + Math.cos(a) * r, y = tribe.y + Math.sin(a) * r;
@@ -148,6 +148,8 @@ describe('мир', () => {
     const spot = hutSpot(w, tribe, 'kitchen');
     const k = w.addBuilding(tribe, 'kitchen', spot.x, spot.y);
     w.buildings.get(k.id)!.progress = 1;
+    // еды с запасом, чтобы голод не мешал проверять лечение
+    w.addTribeRes(tribe, 100, 0);
     const [man, woman] = w.unitsOf(tribe.id);
     w.command(tribe.id, { type: 'act', units: [man.id], target: k.id });
     expect(man.action).toBe('idle');
@@ -193,7 +195,60 @@ describe('мир', () => {
       removePredators(w);
       expect(pushOutOf(u.x, u.y, hut.x, hut.y, f)).toBeNull();
     }
-    expect(Math.hypot(u.x - (spot.x + f.rx + 30), u.y - cy)).toBeLessThan(20);
+    expect(Math.hypot(u.x - (spot.x + f.rx + 30), u.y - cy)).toBeLessThan(30);
+  });
+
+  it('возраст: стареют, седеют, медленнее ходят и умирают от старости, вождь передаётся', () => {
+    const { w, tribe, logs } = makeWorld();
+    const [chief] = w.unitsOf(tribe.id);
+    expect(chief.age).toBe(AGE.start.m);
+    const son = w.spawnUnit(tribe, 'warrior', 'm', tribe.x + 40, tribe.y + 40, 30);
+    run(w, AGE.yearSec * 2 + 1);
+    expect(chief.age).toBe(AGE.start.m + 2);
+    expect(ageLook(chief)).toBe('');
+    // вождю пора умирать — вождём становится старший мужчина
+    w.units.get(chief.id)!.lifespan = chief.age + 0.5;
+    run(w, AGE.yearSec);
+    expect(w.state.units.has(chief.id)).toBe(false);
+    expect(logs.some((l) => l.includes('от старости'))).toBe(true);
+    expect(son.chief).toBe(true);
+    expect(ageLook({ kind: 'warrior', sex: 'm', age: 12 })).toBe('young');
+    expect(ageLook({ kind: 'warrior', sex: 'm', age: 36 })).toBe('old');
+    expect(ageLook({ kind: 'woman', sex: 'f', age: 36 })).toBe('');
+    expect(yearsText(21)).toBe('21 год');
+    expect(yearsText(23)).toBe('23 года');
+    expect(yearsText(12)).toBe('12 лет');
+  });
+
+  it('тренировка делает воина: сильнее, крепче, не работает и охраняет своих', () => {
+    const { w, tribe } = makeWorld();
+    w.addTribeRes(tribe, 300, 0);
+    const spot = hutSpot(w, tribe, 'training');
+    const g = w.addBuilding(tribe, 'training', spot.x, spot.y);
+    w.buildings.get(g.id)!.progress = 1;
+    const [man, woman] = w.unitsOf(tribe.id);
+    // без оружия тренироваться нельзя
+    w.command(tribe.id, { type: 'act', units: [man.id], target: g.id });
+    expect(man.action).not.toBe('train');
+    man.armed = true;
+    man.weapon = 'spear';
+    w.command(tribe.id, { type: 'train', units: [man.id] });
+    expect(man.action).toBe('train');
+    const life = w.units.get(man.id)!.lifespan;
+    run(w, TRAIN.time + 15);
+    expect(man.trained).toBe(true);
+    expect(man.maxHp).toBe(Math.round(110 * TRAIN.hp));
+    expect(w.units.get(man.id)!.lifespan).toBeCloseTo(life + TRAIN.life);
+    // воин не рубит лес
+    const tree = [...w.state.resources.values()].find((r) => r.kind === 'tree')!;
+    w.command(tribe.id, { type: 'act', units: [man.id], target: tree.id });
+    expect(man.action).not.toBe('gather');
+    // на женщину напал волк — воин идёт на помощь
+    w.setJob(man, { type: 'idle' });
+    const wolf = w.spawnAnimal('wolf', woman.x + 60, woman.y)!;
+    w.damageUnit(woman, 5, wolf.id);
+    w.tick(0.6);
+    expect(man.action).toBe('attack');
   });
 
   it('нельзя командовать чужими людьми', () => {

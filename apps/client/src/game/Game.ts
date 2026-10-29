@@ -73,7 +73,7 @@ class WorldScene extends Phaser.Scene {
 
 export class Game {
   /** Камера в единицах мира; zoom — без учёта плотности пикселей экрана. */
-  readonly camera = { x: WORLD.width / 2, y: WORLD.height / 2, zoom: 1 };
+  readonly camera = { x: WORLD.width / 2, y: WORLD.height / 2, zoom: 1.4 };
   readonly fog = new Fog();
   /** Позиция курсора в мире — для призрака постройки. */
   mouseWorld = { x: 0, y: 0 };
@@ -416,6 +416,11 @@ export class Game {
       const own = u.tribe === this.tribeId;
       const royal = u.chief || (!!u.partner && !!s.units.get(u.partner)?.chief);
       const impact = v.update(u, colorOf(u.tribe), selected.has(u.id), own, royal, dt);
+      if (v.landed && visible(u.x, u.y) && (own || this.fog.canSee(u.x, u.y))) {
+        // ноша упала на землю у склада: бревно — громче, еда — тихо
+        const far = Math.hypot(u.x - this.camera.x, u.y - this.camera.y) * this.camera.zoom;
+        knock((v.landed === 'wood' ? 0.22 : 0.1) * Math.max(0, 1 - far / 1400));
+      }
       if (impact && u.task === 'build') {
         // удар по стройке: стук, пыль, постройка вздрагивает
         let best: BuildingView | null = null, bestD = 110 * 110;
@@ -456,7 +461,7 @@ export class Game {
     });
     syncMap(this.buildings, s.buildings, (b) => new BuildingSprite(scene, m, b.kind), (v, b) => {
       v.update(b, colorOf(b.tribe), selected.has(b.id), dt);
-      v.root.setVisible(visible(b.x, b.y) && (b.tribe === this.tribeId || this.fog.canSee(b.x, b.y)));
+      v.setVisible(visible(b.x, b.y) && (b.tribe === this.tribeId || this.fog.canSee(b.x, b.y)));
     });
     syncMap(this.resources, s.resources, (r) => new ResourceSprite(scene, m, r), (v, r) => {
       const vis = visible(r.x, r.y);

@@ -41,6 +41,8 @@ export interface UnitView {
   hp: number;
   maxHp: number;
   growth: number;
+  /** Возраст в годах. */
+  age: number;
   carry: number;
   carryType: string;
   action: string;
@@ -53,6 +55,8 @@ export interface UnitView {
   armed: boolean;
   /** Какое оружие: spear, axe или ''. */
   weapon: string;
+  /** Прошёл тренировку — воин: охраняет племя, не работает. */
+  trained: boolean;
   /** Вождь — первый мужчина племени. */
   chief: boolean;
   /** Внутри какой хижины (там его не видно), '' — снаружи. */

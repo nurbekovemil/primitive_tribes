@@ -16,6 +16,7 @@ import {
 import type { Tribe, Unit } from '../state/schema';
 import type { World } from './World';
 import { forgeNear, sendToEat, settleFamily } from './units';
+import { nearest } from './util';
 
 const isStr = (v: unknown): v is string => typeof v === 'string' && v.length > 0 && v.length < 32;
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
@@ -31,11 +32,13 @@ export function parseCommand(raw: unknown): Command | null {
     case 'act':
       return isIds(c.units) && isStr(c.target) ? { type: 'act', units: c.units, target: c.target } : null;
     case 'build':
-      return isIds(c.units) && (c.building === 'hut' || c.building === 'storage' || c.building === 'forge' || c.building === 'kitchen') && isNum(c.x) && isNum(c.y)
+      return isIds(c.units) && (c.building === 'hut' || c.building === 'storage' || c.building === 'forge' || c.building === 'kitchen' || c.building === 'training') && isNum(c.x) && isNum(c.y)
         ? { type: 'build', units: c.units, building: c.building, x: c.x, y: c.y }
         : null;
     case 'stop':
       return isIds(c.units) ? { type: 'stop', units: c.units } : null;
+    case 'train':
+      return isIds(c.units) ? { type: 'train', units: c.units } : null;
     case 'craft':
       return isIds(c.units) && (c.weapon === 'spear' || c.weapon === 'axe') ? { type: 'craft', units: c.units, weapon: c.weapon } : null;
     case 'eat':
@@ -90,6 +93,8 @@ export function applyCommand(w: World, tribeId: string, cmd: Command) {
       return build(w, tribe, ownUnits(w, tribeId, cmd.units), cmd.building, cmd.x, cmd.y);
     case 'eat':
       return eat(w, tribe, ownUnits(w, tribeId, cmd.units));
+    case 'train':
+      return train(w, tribe, ownUnits(w, tribeId, cmd.units));
     case 'marry':
       return marry(w, tribe, cmd.units);
     case 'birth':
@@ -108,8 +113,9 @@ function act(w: World, tribe: Tribe, units: Unit[], target: string) {
   }
   const walkers: Unit[] = [];
   const full: Unit[] = [];
+  const unarmed: Unit[] = [];
   for (const u of units) {
-    const action = actionFor(u.kind as UnitKind, info, u.armed);
+    const action = actionFor(u.kind as UnitKind, info, u.armed, u.trained);
     switch (action) {
       case 'gather': {
         const r = w.state.resources.get(target)!;
@@ -144,11 +150,17 @@ function act(w: World, tribe: Tribe, units: Unit[], target: string) {
       case 'eat':
         if (sendToEat(w, u, target) === 'full') full.push(u);
         break;
+      case 'train':
+        if (!u.armed) unarmed.push(u);
+        else w.setJob(u, { type: 'train', ground: target, progress: 0, phase: 'run', t: 0, lap: 0 });
+        break;
       default:
         walkers.push(u);
     }
   }
   if (full.length) w.log(tribe.id, fullText(full));
+  if (unarmed.length) w.log(tribe.id, 'Тренироваться можно только с оружием — сначала сделайте копьё или топор в кузнице.', 'bad');
+  if (info.entity === 'building' && info.kind === 'training' && units.some((u) => u.trained)) w.log(tribe.id, 'Воины уже обучены.');
   const pts = formation(w, loc.x, loc.y + loc.r + 10, walkers.length);
   walkers.forEach((u, i) => w.setJob(u, { type: 'move', x: pts[i].x, y: pts[i].y }));
   if (info.entity === 'building' && info.kind === 'hut' && info.own && info.built && units.length && units.every((u) => !u.partner)) {
@@ -169,6 +181,15 @@ function eat(w: World, tribe: Tribe, units: Unit[]) {
   }
   if (none) return w.log(tribe.id, 'Нет готовой кухни — постройте её, там раненые едят и лечатся.', 'bad');
   if (full.length) w.log(tribe.id, fullText(full));
+}
+
+/** Мужчины с оружием идут на ближайшую площадку для тренировок. */
+function train(w: World, tribe: Tribe, units: Unit[]) {
+  const men = units.filter((u) => u.kind === 'warrior' && !u.trained);
+  if (!men.length) return;
+  const ground = nearest(w.state.buildings.values(), men[0], (b) => b.tribe === tribe.id && b.kind === 'training' && w.isBuilt(b));
+  if (!ground) return w.log(tribe.id, 'Нет готовой площадки для тренировок — постройте её.', 'bad');
+  act(w, tribe, men, ground.id);
 }
 
 function craft(w: World, tribe: Tribe, units: Unit[], weapon: WeaponKind) {

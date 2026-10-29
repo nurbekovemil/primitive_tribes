@@ -372,8 +372,10 @@ func kitchen(_ stage: Int) {
   parts = []
   xf = CGAffineTransform(scaleX: KT_K, y: KT_K)
   gradA = p(-190, -240); gradB = p(190, 70)
+  curLayer = 0
   add([ellipse(p(0, 0), KT_R, KT_R * DEPTH_K)], 0x5c4a32, outline: false)
   // заслон от ветра: шкуры между столбами (на третьем этапе — только слева)
+  curLayer = 1
   let polesUp = stage == 0 || stage >= 2
   if polesUp {
     for th in KT_POLES { part([capsule(ktPole(th, 0), ktPole(th, th == 1.57 ? 128 : 104), 5, 4)], shade(LOG, 0.8)) }
@@ -395,8 +397,10 @@ func kitchen(_ stage: Int) {
     part([capsule(c + p(-26, 0), c + p(26, 0), 9, 9)], LOG)
     part([ellipse(c + p(26, 0), 6, 8.5)], LOGEND)
   }
+  curLayer = 2
   if stage != 1 { for s in KT_SEATS where s.1 < -20 { bench(s) } }
   // очаг: кольцо камней, угли
+  curLayer = 3
   add([ellipse(p(0, 0), 40, 17)], 0x3a2c22, outline: false)
   if stage == 0 { add([ellipse(p(0, -1), 28, 11)], EMBER, outline: false); add([ellipse(p(-3, -2), 14, 5)], 0xffb050, outline: false) }
   for i in 0..<12 {
@@ -423,13 +427,16 @@ func kitchen(_ stage: Int) {
     part([ellipse(p(cos(a) * 40, sin(a) * 17 - 3), 9, 6.5)], STONE_B)
   }
   // дрова слева спереди
+  curLayer = 5
   logEnds(p(-130, 44), stage == 1 ? [3, 2] : [3, 2, 1], 10)
   if stage == 1 {
     part([capsule(p(30, 40), p(130, 30), 7, 6)], LOG)
     part([capsule(p(40, 58), p(134, 50), 7, 6)], shade(LOG, 0.92))
     return
   }
+  curLayer = 4
   for s in KT_SEATS where s.1 >= -20 { bench(s) }
+  curLayer = 5
   if stage == 2 {
     part([capsule(p(60, 50), p(126, 40), 13, 12)], HIDE)
     return
@@ -445,6 +452,18 @@ func kitchen(_ stage: Int) {
   for (dx, dy) in [(-9, -28), (0, -30), (9, -28), (-4, -26), (5, -26)] { add([ellipse(bk + p(F(dx), F(dy)), 5, 3.6)], 0xb83a2c, outline: false) }
 }
 
+/// Открытая постройка по слоям: building/<name>-floor — земля (лежит под всеми), <name>-props — по кадру на предмет;
+/// props в sprites.json — y основания каждого предмета (единицы мира от точки опоры), по нему игра сортирует глубину.
+func layered(_ name: String, _ w: Int, _ h: Int, _ ax: F, _ ay: F, props: [F], _ draw: @escaping (Int) -> Void) {
+  want = 0
+  put(name + "-floor", w, h, ax, ay) { _ in draw(0) }
+  put(name + "-props", w, h, ax, ay, frames: props.count) { i in want = i + 1; draw(0) }
+  want = nil
+  var e = entries["building/" + name] as! [String: Any]
+  e["props"] = props.map { Double($0) }
+  entries["building/" + name] = e
+}
+
 /// Язык пламени, кадр i из 6: без обводки, жёлтый внутри, оранжевый снаружи; основание в (0, 0).
 func flameFrame(_ i: Int) {
   parts = []; xf = .identity
@@ -457,6 +476,75 @@ func flameFrame(_ i: Int) {
   add([tongue(10, 30 + 4 * sin(ph + 2), -9, 5 * sin(ph + 1.4))], 0xf08a30, outline: false)
   add([tongue(10, 34 + 5 * sin(ph + 4), 8, 5 * sin(ph + 2.8))], 0xf08a30, outline: false)
   add([tongue(9, 20 + 4 * sin(ph + 1), 0, 3 * sin(ph + 2))], 0xffd060, outline: false)
+}
+
+// ---------- площадка для тренировок: беговой круг, мишень для копья, чучела для топора, стойка с копьями ----------
+
+let TR_R: F = 190
+/// Точки совпадают с doTrain в units.ts (там — в единицах мира, здесь ×2).
+let TR_TARGET = p(-144, -44), TR_DUMMIES = [p(110, -36), p(150, 16)], TR_RACK = p(0, -8)
+let TR_RIBBON = TR_RACK + p(34, -108)
+
+func training(_ stage: Int) {
+  // 0 — готовая, 1–3 — этапы стройки (брёвна и разметка → столбы → мишень и руки чучел)
+  parts = []
+  xf = .identity
+  gradA = p(-200, -200); gradB = p(200, 60)
+  curLayer = 0
+  add([ellipse(p(0, 0), TR_R, TR_R * DEPTH_K)], 0x5c4a32, outline: false)
+  // беговой круг — вытоптанная полоса
+  mark((0...48).map { p(cos(F($0) / 48 * 2 * .pi) * 168, sin(F($0) / 48 * 2 * .pi) * 68 - 8) }, 0x86704a, 24)
+  /// Мишень: стойка-тренога и круг из соломы со шкурой.
+  func target(_ c: CGPoint, face: Bool) {
+    part([capsule(c + p(-18, 0), c + p(-6, -78), 4, 3.5), capsule(c + p(18, 0), c + p(6, -78), 4, 3.5)], LOG)
+    if !face { return }
+    let m = c + p(0, -62)
+    part([ellipse(m, 28, 30)], 0xc9a46c)
+    add([ellipse(m, 18, 19)], HIDE, outline: false)
+    add([ellipse(m, 7, 7.5)], 0x8a3a24, outline: false)
+    // торчит воткнутое копьё
+    part([capsule(m + p(4, 2), m + p(46, -10), 2.4, 2.2)], WOOD)
+  }
+  /// Чучело: столб, руки-перекладина, туловище, обмотанное шкурой, голова-пучок соломы.
+  func dummy(_ c: CGPoint, arms: Bool, body: Bool) {
+    part([capsule(c, c + p(0, -98), 6, 5)], LOG)
+    if arms { part([capsule(c + p(-30, -70), c + p(30, -74), 4.5, 4.5)], shade(LOG, 0.9)) }
+    if body {
+      part([smooth([c + p(-17, -36), c + p(-19, -64), c + p(-10, -80), c + p(10, -80), c + p(19, -64), c + p(17, -36), c + p(0, -30)])], HIDE)
+      mark([c + p(-17, -50), c + p(17, -54)], shade(HIDE, 0.75), 3)
+      part([ellipse(c + p(0, -94), 13, 12)], 0xc9a46c)
+    }
+  }
+  /// Стойка: два столба, перекладина, прислонённые копья.
+  func rack(_ c: CGPoint, spears: Bool) {
+    if spears {
+      for x in [F(-26), -10, 8] {
+        let a = c + p(x - 6, 2), b = c + p(x + 8, -88)
+        part([capsule(a, b, 2.6, 2.4)], WOOD)
+        let d = b - a, u = d * (1 / hypot(d.x, d.y)), n = p(-u.y, u.x)
+        part([smooth([b + n * 5.5, b + u * 16, b - n * 5.5, b - u * 4])], STONE_B)
+      }
+    }
+    for x in [F(-34), 34] { part([capsule(c + p(x, 0), c + p(x, -62), 5, 4.5)], LOG) }
+    part([capsule(c + p(-40, -56), c + p(40, -58), 4.5, 4.5)], LOG)
+    if spears { part([capsule(c + p(34, -60), TR_RIBBON, 3, 2.6)], LOG) }
+  }
+  if stage == 1 {
+    logEnds(p(-60, 36), [3, 2], 12)
+    part([capsule(p(40, 40), p(150, 30), 7, 6)], LOG)
+    part([capsule(p(60, 58), p(156, 50), 7, 6)], shade(LOG, 0.92))
+    return
+  }
+  curLayer = 1
+  target(TR_TARGET, face: stage != 2)
+  curLayer = 2
+  dummy(TR_DUMMIES[0], arms: stage != 2, body: stage == 0 || stage == 3)
+  curLayer = 3
+  rack(TR_RACK, spears: stage == 0)
+  curLayer = 4
+  dummy(TR_DUMMIES[1], arms: stage != 2, body: stage == 0)
+  if stage == 2 { part([capsule(p(-80, 50), p(-10, 44), 13, 12)], HIDE) }
+  curLayer = 0
 }
 
 // ---------- ратуша: купол из шкур с дымовым отверстием, вход между бивнями мамонта ----------
@@ -544,6 +632,12 @@ put("forge", 340, 330, 170, 316, base: (FG_C.y, FG_R, FG_R * DEPTH_K), flag: ("r
 put("forge-build", 340, 330, 170, 316, frames: 3) { forge($0 + 1) }
 put("kitchen", 420, 340, 210, 236, base: (0, KT_R * KT_K, KT_R * KT_K * DEPTH_K), flag: ("ribbon", KT_RIBBON), flame: p(0, -2)) { _ in kitchen(0) }
 put("kitchen-build", 420, 340, 210, 236, frames: 3) { kitchen($0 + 1) }
+// заслон, задние скамьи, очаг с вертелом, боковые скамьи, горшок и дрова спереди
+layered("kitchen", 420, 340, 210, 236, props: [-36, -28, 0, -6, 22]) { _ in kitchen(0) }
+put("training", 440, 300, 220, 200, base: (0, TR_R, TR_R * DEPTH_K), flag: ("ribbon", TR_RIBBON)) { _ in training(0) }
+put("training-build", 440, 300, 220, 200, frames: 3) { training($0 + 1) }
+// мишень, чучело, стойка, чучело — y их оснований (TR_* / 2)
+layered("training", 440, 300, 220, 200, props: [-22, -18, -4, 8]) { _ in training(0) }
 put("flame", 64, 72, 32, 64, frames: 6) { flameFrame($0) }
 put("townhall", 460, 370, 220, 350, base: (DOME_C.y, DOME_R, DOME_R * DEPTH_K), flag: ("flag", TH_FLAG)) { _ in townhall() }
 // флажок и ленточка: 8 кадров волны; *-color — только полотнище, в игре его красят в цвет племени

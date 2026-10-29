@@ -12,11 +12,11 @@ export type UnitKind = 'warrior' | 'woman' | 'child';
 export type Sex = 'm' | 'f';
 export type AnimalKind = 'deer' | 'mammoth' | 'wolf' | 'tiger';
 export type ResourceKind = 'tree' | 'bush' | 'carcass';
-export type BuildingKind = 'hut' | 'storage' | 'forge' | 'kitchen';
+export type BuildingKind = 'hut' | 'storage' | 'forge' | 'kitchen' | 'training';
 /** Оружие мужчины; делается только в кузнице. '' — без оружия (житель). */
 export type WeaponKind = 'spear' | 'axe';
 export type CarryType = '' | 'food' | 'wood';
-export type UnitAction = 'idle' | 'move' | 'gather' | 'deposit' | 'attack' | 'build' | 'settle' | 'birth' | 'flee' | 'craft' | 'cook' | 'eat';
+export type UnitAction = 'idle' | 'move' | 'gather' | 'deposit' | 'attack' | 'build' | 'settle' | 'birth' | 'flee' | 'craft' | 'cook' | 'eat' | 'train';
 export type AnimalAction = 'idle' | 'walk' | 'run' | 'attack';
 
 export interface UnitStats {
@@ -84,6 +84,8 @@ export const FOOTPRINT: Record<BuildingKind, Footprint> = {
   forge: { dy: -26, rx: 59, ry: 24 },
   /** Кухня под открытым небом: обходят только очаг, к скамьям можно подойти. */
   kitchen: { dy: 0, rx: 24, ry: 12 },
+  /** Площадка открытая: обходят только стойку с копьями посередине. */
+  training: { dy: -4, rx: 16, ry: 8 },
 };
 /** Ратуша стоит позади центра племени (там сдают добычу). */
 export const TOWNHALL_FOOTPRINT: Footprint = { dy: -61, rx: 72, ry: 30 };
@@ -107,7 +109,21 @@ export const BUILDING_STATS: Record<BuildingKind, { hp: number; radius: number; 
   forge: { hp: 280, radius: 46, buildTime: 15, wood: 40 },
   /** Кухня под открытым небом: повар варит еду со склада, раненые приходят сюда поесть и лечатся. */
   kitchen: { hp: 260, radius: 86, buildTime: 18, wood: 35 },
+  /** Площадка для тренировок: мужчины с оружием бегают, бросают копьё и рубят чучела — и получают звание воина. */
+  training: { hp: 240, radius: 92, buildTime: 16, wood: 40 },
 };
+
+/**
+ * Тренировка: time секунд на площадке (круг бега runTime, потом бой drillTime с мишенью или чучелом).
+ * Обученный воин быстрее (speed), сильнее (damage), крепче (hp) и живёт на life лет дольше.
+ */
+export const TRAIN = { time: 45, runTime: 8, drillTime: 7, speed: 1.15, damage: 1.3, hp: 1.25, life: 5 } as const;
+
+/**
+ * Воины охраняют племя: идут на помощь своим, на кого напали, ближе help; гонят чужих и хищников,
+ * которых видят на земле племени; гонятся не дальше chase.
+ */
+export const GUARD = { help: 600, chase: 700, every: 0.5 } as const;
 
 /**
  * Кухня. Здоровье само не восстанавливается: раненый (ниже hungryAt) сам идёт на кухню и ест.
@@ -138,6 +154,38 @@ export const COSTS = {
   birthFood: 20,
 } as const;
 
+/**
+ * Возраст: год проходит за yearSec секунд, детство (до adult лет) — быстрее, за TIMES.growUp.
+ * Мужчина: до beard лет без бороды, с grey — седой; женщина седеет с womanGrey. Седые ходят медленнее (oldSpeed).
+ * Умирают от старости в случайном возрасте из life.
+ */
+export const AGE = {
+  yearSec: 30,
+  adult: 10,
+  beard: 25,
+  grey: 35,
+  womanGrey: 40,
+  oldSpeed: 0.8,
+  life: { m: [40, 50], f: [50, 60] },
+  /** С какого возраста начинают вождь и его жена. */
+  start: { m: 25, f: 22 },
+} as const;
+
+/** Как выглядит человек по возрасту: young — взрослый без бороды, old — седой, '' — обычный. Дети — ''. */
+export function ageLook(u: { kind: string; sex: string; age: number }): '' | 'young' | 'old' {
+  if (u.kind === 'child') return '';
+  if (u.age >= (u.sex === 'm' ? AGE.grey : AGE.womanGrey)) return 'old';
+  if (u.sex === 'm' && u.age < AGE.beard) return 'young';
+  return '';
+}
+
+/** «1 год», «3 года», «25 лет». */
+export function yearsText(n: number): string {
+  const d = n % 10, dd = n % 100;
+  const w = d === 1 && dd !== 11 ? 'год' : d >= 2 && d <= 4 && (dd < 12 || dd > 14) ? 'года' : 'лет';
+  return `${n} ${w}`;
+}
+
 /** Малыш (рост меньше until, в процентах) ползает на четвереньках — медленнее, скорость × speed. */
 export const CRAWL = { until: 35, speed: 0.55 } as const;
 
@@ -147,6 +195,8 @@ export const TIMES = {
   birth: 8,
   eatEvery: 15,
   carcassDecay: 180,
+  /** Сколько секунд человек кладёт или бросает ношу у склада. */
+  drop: 0.6,
   /** Сколько ждёт племя отключившегося игрока. */
   offlineKeep: 300,
 } as const;
@@ -173,7 +223,7 @@ export const LIMITS = {
 } as const;
 
 /** Радиус обзора: дальше этого игрок не видит чужих людей и зверей (туман войны). */
-export const VISION = { warrior: 320, woman: 260, child: 200, hut: 240, storage: 220, forge: 220, kitchen: 220, camp: 340 } as const;
+export const VISION = { warrior: 320, woman: 260, child: 200, hut: 240, storage: 220, forge: 220, kitchen: 220, training: 240, camp: 340 } as const;
 
 /** Дикие звери живут за туманом: появляются и бродят не ближе этого к ратуше (обзор ратуши + запас). */
 export const WILD_DISTANCE = VISION.camp + 260;
@@ -192,9 +242,10 @@ export const TRIBE_COLORS = [
 ];
 
 export const UNIT_LABEL: Record<UnitKind, string> = { warrior: 'Воин', woman: 'Женщина', child: 'Ребёнок' };
-/** Мужчина без оружия — житель (работает), с копьём или топором — воин. */
-export const unitLabel = (u: { kind: string; armed: boolean }) => (u.kind === 'warrior' && !u.armed ? 'Житель' : UNIT_LABEL[u.kind as UnitKind]);
-export const BUILDING_LABEL: Record<BuildingKind, string> = { hut: 'Хижина', storage: 'Склад', forge: 'Кузница', kitchen: 'Кухня' };
+/** Мужчина без оружия — житель, с оружием — охотник, после тренировки — воин (охраняет племя, не работает). */
+export const unitLabel = (u: { kind: string; armed: boolean; trained?: boolean }) =>
+  u.kind !== 'warrior' ? UNIT_LABEL[u.kind as UnitKind] : u.trained ? 'Воин' : u.armed ? 'Охотник' : 'Житель';
+export const BUILDING_LABEL: Record<BuildingKind, string> = { hut: 'Хижина', storage: 'Склад', forge: 'Кузница', kitchen: 'Кухня', training: 'Площадка для тренировок' };
 export const ANIMAL_LABEL: Record<AnimalKind, string> = {
   deer: 'Олень',
   mammoth: 'Мамонт',
@@ -215,4 +266,5 @@ export const ACTION_LABEL: Record<UnitAction, string> = {
   craft: 'Мастерит оружие',
   cook: 'Готовит еду на кухне',
   eat: 'Идёт поесть на кухню',
+  train: 'Тренируется',
 };
