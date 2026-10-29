@@ -1,0 +1,22 @@
+{
+  "name": "@game/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "@colyseus/core": "^0.18.23",
+    "@colyseus/schema": "^5.0.42",
+    "@colyseus/ws-transport": "^0.18.4",
+    "@game/shared": "workspace:*"
+  }
+}

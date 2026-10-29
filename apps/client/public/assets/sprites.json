@@ -1,0 +1,1091 @@
+{
+  "animal\/deer" : {
+    "ax" : 0.42424242424242425,
+    "ay" : 0.95348837209302328,
+    "file" : "animal\/deer.png",
+    "frames" : 3,
+    "h" : 172,
+    "scale" : 0.5,
+    "w" : 132
+  },
+  "animal\/mammoth" : {
+    "ax" : 0.43076923076923079,
+    "ay" : 0.96078431372549022,
+    "file" : "animal\/mammoth.png",
+    "frames" : 3,
+    "h" : 204,
+    "scale" : 0.5,
+    "w" : 260
+  },
+  "animal\/tiger" : {
+    "ax" : 0.51111111111111107,
+    "ay" : 0.93220338983050843,
+    "file" : "animal\/tiger.png",
+    "frames" : 3,
+    "h" : 118,
+    "scale" : 0.5,
+    "w" : 180
+  },
+  "animal\/wolf" : {
+    "ax" : 0.5,
+    "ay" : 0.9285714285714286,
+    "file" : "animal\/wolf.png",
+    "frames" : 3,
+    "h" : 112,
+    "scale" : 0.5,
+    "w" : 168
+  },
+  "building\/camp-1" : {
+    "ax" : 0.5,
+    "ay" : 0.5,
+    "file" : "building\/camp-1.png",
+    "frames" : 1,
+    "h" : 360,
+    "scale" : 1,
+    "w" : 360
+  },
+  "building\/camp-2" : {
+    "ax" : 0.5,
+    "ay" : 0.5,
+    "file" : "building\/camp-2.png",
+    "frames" : 1,
+    "h" : 360,
+    "scale" : 1,
+    "w" : 360
+  },
+  "building\/camp-3" : {
+    "ax" : 0.5,
+    "ay" : 0.5,
+    "file" : "building\/camp-3.png",
+    "frames" : 1,
+    "h" : 360,
+    "scale" : 1,
+    "w" : 360
+  },
+  "building\/flag" : {
+    "ax" : 0.083333333333333329,
+    "ay" : 0.19230769230769232,
+    "file" : "building\/flag.png",
+    "frames" : 8,
+    "h" : 52,
+    "scale" : 0.5,
+    "w" : 72
+  },
+  "building\/flag-color" : {
+    "ax" : 0.083333333333333329,
+    "ay" : 0.19230769230769232,
+    "file" : "building\/flag-color.png",
+    "frames" : 8,
+    "h" : 52,
+    "scale" : 0.5,
+    "w" : 72
+  },
+  "building\/flame" : {
+    "ax" : 0.5,
+    "ay" : 0.88888888888888884,
+    "file" : "building\/flame.png",
+    "frames" : 6,
+    "h" : 72,
+    "scale" : 0.5,
+    "w" : 64
+  },
+  "building\/forge" : {
+    "ax" : 0.5,
+    "ay" : 0.95757575757575752,
+    "base" : [
+      -26.039999999999999,
+      62,
+      26.039999999999999
+    ],
+    "file" : "building\/forge.png",
+    "flag" : [
+      "ribbon",
+      52,
+      -128.46000000000001
+    ],
+    "frames" : 1,
+    "h" : 330,
+    "scale" : 0.5,
+    "w" : 340
+  },
+  "building\/forge-build" : {
+    "ax" : 0.5,
+    "ay" : 0.95757575757575752,
+    "file" : "building\/forge-build.png",
+    "frames" : 3,
+    "h" : 330,
+    "scale" : 0.5,
+    "w" : 340
+  },
+  "building\/hut" : {
+    "ax" : 0.5,
+    "ay" : 0.9555555555555556,
+    "base" : [
+      -24.779999999999998,
+      59,
+      24.779999999999998
+    ],
+    "file" : "building\/hut.png",
+    "flag" : [
+      "ribbon",
+      -6.3683051201531136,
+      -154.79578052732026
+    ],
+    "frames" : 1,
+    "h" : 360,
+    "scale" : 0.5,
+    "w" : 300
+  },
+  "building\/hut-build" : {
+    "ax" : 0.5,
+    "ay" : 0.9555555555555556,
+    "file" : "building\/hut-build.png",
+    "frames" : 3,
+    "h" : 360,
+    "scale" : 0.5,
+    "w" : 300
+  },
+  "building\/kitchen" : {
+    "ax" : 0.5,
+    "ay" : 0.69411764705882351,
+    "base" : [
+      0,
+      90,
+      37.799999999999997
+    ],
+    "file" : "building\/kitchen.png",
+    "flag" : [
+      "ribbon",
+      0.065935851648714211,
+      -106.05598897363747
+    ],
+    "flame" : [
+      0,
+      -1
+    ],
+    "frames" : 1,
+    "h" : 340,
+    "scale" : 0.5,
+    "w" : 420
+  },
+  "building\/kitchen-build" : {
+    "ax" : 0.5,
+    "ay" : 0.69411764705882351,
+    "file" : "building\/kitchen-build.png",
+    "frames" : 3,
+    "h" : 340,
+    "scale" : 0.5,
+    "w" : 420
+  },
+  "building\/ribbon" : {
+    "ax" : 0.12,
+    "ay" : 0.35294117647058826,
+    "file" : "building\/ribbon.png",
+    "frames" : 8,
+    "h" : 34,
+    "scale" : 0.5,
+    "w" : 50
+  },
+  "building\/ribbon-color" : {
+    "ax" : 0.12,
+    "ay" : 0.35294117647058826,
+    "file" : "building\/ribbon-color.png",
+    "frames" : 8,
+    "h" : 34,
+    "scale" : 0.5,
+    "w" : 50
+  },
+  "building\/storage" : {
+    "ax" : 0.5,
+    "ay" : 0.95757575757575752,
+    "base" : [
+      -26.879999999999999,
+      64,
+      26.879999999999999
+    ],
+    "file" : "building\/storage.png",
+    "flag" : [
+      "flag",
+      0,
+      -141.23000000000002
+    ],
+    "frames" : 1,
+    "h" : 330,
+    "scale" : 0.5,
+    "w" : 340
+  },
+  "building\/storage-build" : {
+    "ax" : 0.5,
+    "ay" : 0.95757575757575752,
+    "file" : "building\/storage-build.png",
+    "frames" : 3,
+    "h" : 330,
+    "scale" : 0.5,
+    "w" : 340
+  },
+  "building\/totem" : {
+    "ax" : 0.44,
+    "ay" : 0.96153846153846156,
+    "file" : "building\/totem.png",
+    "frames" : 1,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 100
+  },
+  "building\/totem-color" : {
+    "ax" : 0.44,
+    "ay" : 0.96153846153846156,
+    "file" : "building\/totem-color.png",
+    "frames" : 1,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 100
+  },
+  "building\/townhall" : {
+    "ax" : 0.47826086956521741,
+    "ay" : 0.94594594594594594,
+    "base" : [
+      -31.5,
+      75,
+      31.5
+    ],
+    "file" : "building\/townhall.png",
+    "flag" : [
+      "flag",
+      75,
+      -160
+    ],
+    "frames" : 1,
+    "h" : 370,
+    "scale" : 0.5,
+    "w" : 460
+  },
+  "item\/basket" : {
+    "ax" : 0.5,
+    "ay" : 0.77777777777777779,
+    "file" : "item\/basket.png",
+    "frames" : 1,
+    "h" : 36,
+    "scale" : 0.5,
+    "w" : 40
+  },
+  "item\/log" : {
+    "ax" : 0.5,
+    "ay" : 0.53846153846153844,
+    "file" : "item\/log.png",
+    "frames" : 1,
+    "h" : 26,
+    "scale" : 0.5,
+    "w" : 64
+  },
+  "item\/meat" : {
+    "ax" : 0.5,
+    "ay" : 0.77777777777777779,
+    "file" : "item\/meat.png",
+    "frames" : 1,
+    "h" : 36,
+    "scale" : 0.5,
+    "w" : 72
+  },
+  "item\/puff" : {
+    "ax" : 0.5,
+    "ay" : 0.5,
+    "file" : "item\/puff.png",
+    "frames" : 1,
+    "h" : 96,
+    "scale" : 0.5,
+    "w" : 96
+  },
+  "nature\/boulder-1" : {
+    "ax" : 0.5,
+    "ay" : 0.81818181818181812,
+    "file" : "nature\/boulder-1.png",
+    "frames" : 1,
+    "h" : 84,
+    "scale" : 0.5,
+    "w" : 122
+  },
+  "nature\/boulder-2" : {
+    "ax" : 0.5,
+    "ay" : 0.81818181818181812,
+    "file" : "nature\/boulder-2.png",
+    "frames" : 1,
+    "h" : 84,
+    "scale" : 0.5,
+    "w" : 122
+  },
+  "nature\/bush-blue" : {
+    "ax" : 0.5,
+    "ay" : 0.88,
+    "file" : "nature\/bush-blue.png",
+    "frames" : 11,
+    "h" : 100,
+    "scale" : 0.5,
+    "w" : 120
+  },
+  "nature\/bush-red" : {
+    "ax" : 0.5,
+    "ay" : 0.88,
+    "file" : "nature\/bush-red.png",
+    "frames" : 11,
+    "h" : 100,
+    "scale" : 0.5,
+    "w" : 120
+  },
+  "nature\/fern-1" : {
+    "ax" : 0.5,
+    "ay" : 0.88235294117647056,
+    "file" : "nature\/fern-1.png",
+    "frames" : 1,
+    "h" : 68,
+    "scale" : 0.5,
+    "w" : 120
+  },
+  "nature\/fern-2" : {
+    "ax" : 0.5,
+    "ay" : 0.88235294117647056,
+    "file" : "nature\/fern-2.png",
+    "frames" : 1,
+    "h" : 68,
+    "scale" : 0.5,
+    "w" : 120
+  },
+  "nature\/fern-3" : {
+    "ax" : 0.5,
+    "ay" : 0.88235294117647056,
+    "file" : "nature\/fern-3.png",
+    "frames" : 1,
+    "h" : 68,
+    "scale" : 0.5,
+    "w" : 120
+  },
+  "nature\/flowers-1" : {
+    "ax" : 0.5,
+    "ay" : 0.875,
+    "file" : "nature\/flowers-1.png",
+    "frames" : 1,
+    "h" : 32,
+    "scale" : 0.5,
+    "w" : 48
+  },
+  "nature\/flowers-2" : {
+    "ax" : 0.5,
+    "ay" : 0.875,
+    "file" : "nature\/flowers-2.png",
+    "frames" : 1,
+    "h" : 32,
+    "scale" : 0.5,
+    "w" : 48
+  },
+  "nature\/flowers-3" : {
+    "ax" : 0.5,
+    "ay" : 0.875,
+    "file" : "nature\/flowers-3.png",
+    "frames" : 1,
+    "h" : 32,
+    "scale" : 0.5,
+    "w" : 48
+  },
+  "nature\/flowers-4" : {
+    "ax" : 0.5,
+    "ay" : 0.875,
+    "file" : "nature\/flowers-4.png",
+    "frames" : 1,
+    "h" : 32,
+    "scale" : 0.5,
+    "w" : 48
+  },
+  "nature\/flowers-5" : {
+    "ax" : 0.5,
+    "ay" : 0.875,
+    "file" : "nature\/flowers-5.png",
+    "frames" : 1,
+    "h" : 32,
+    "scale" : 0.5,
+    "w" : 48
+  },
+  "nature\/pine-1" : {
+    "ax" : 0.5,
+    "ay" : 0.97619047619047616,
+    "file" : "nature\/pine-1.png",
+    "frames" : 1,
+    "h" : 504,
+    "scale" : 0.5,
+    "w" : 224
+  },
+  "nature\/pine-2" : {
+    "ax" : 0.5,
+    "ay" : 0.97619047619047616,
+    "file" : "nature\/pine-2.png",
+    "frames" : 1,
+    "h" : 504,
+    "scale" : 0.5,
+    "w" : 224
+  },
+  "nature\/pine-3" : {
+    "ax" : 0.5,
+    "ay" : 0.97619047619047616,
+    "file" : "nature\/pine-3.png",
+    "frames" : 1,
+    "h" : 504,
+    "scale" : 0.5,
+    "w" : 224
+  },
+  "nature\/rock-1" : {
+    "ax" : 0.5,
+    "ay" : 0.81818181818181823,
+    "file" : "nature\/rock-1.png",
+    "frames" : 1,
+    "h" : 44,
+    "scale" : 0.5,
+    "w" : 64
+  },
+  "nature\/rock-2" : {
+    "ax" : 0.5,
+    "ay" : 0.81818181818181823,
+    "file" : "nature\/rock-2.png",
+    "frames" : 1,
+    "h" : 44,
+    "scale" : 0.5,
+    "w" : 64
+  },
+  "nature\/stump" : {
+    "ax" : 0.5,
+    "ay" : 0.75,
+    "file" : "nature\/stump.png",
+    "frames" : 1,
+    "h" : 48,
+    "scale" : 0.5,
+    "w" : 72
+  },
+  "nature\/tree-1" : {
+    "ax" : 0.5,
+    "ay" : 0.97029702970297027,
+    "file" : "nature\/tree-1.png",
+    "frames" : 1,
+    "h" : 404,
+    "scale" : 0.5,
+    "w" : 248
+  },
+  "nature\/tree-2" : {
+    "ax" : 0.5,
+    "ay" : 0.97029702970297027,
+    "file" : "nature\/tree-2.png",
+    "frames" : 1,
+    "h" : 404,
+    "scale" : 0.5,
+    "w" : 248
+  },
+  "nature\/tree-3" : {
+    "ax" : 0.5,
+    "ay" : 0.97029702970297027,
+    "file" : "nature\/tree-3.png",
+    "frames" : 1,
+    "h" : 404,
+    "scale" : 0.5,
+    "w" : 248
+  },
+  "nature\/tuft-1" : {
+    "ax" : 0.5,
+    "ay" : 0.88888888888888884,
+    "file" : "nature\/tuft-1.png",
+    "frames" : 1,
+    "h" : 36,
+    "scale" : 0.5,
+    "w" : 40
+  },
+  "nature\/tuft-2" : {
+    "ax" : 0.5,
+    "ay" : 0.88888888888888884,
+    "file" : "nature\/tuft-2.png",
+    "frames" : 1,
+    "h" : 36,
+    "scale" : 0.5,
+    "w" : 40
+  },
+  "nature\/tuft-3" : {
+    "ax" : 0.5,
+    "ay" : 0.88888888888888884,
+    "file" : "nature\/tuft-3.png",
+    "frames" : 1,
+    "h" : 36,
+    "scale" : 0.5,
+    "w" : 40
+  },
+  "person\/axeman-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/axeman-king-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-king-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-king-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/axeman-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/axeman-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/baby-boy-side" : {
+    "ax" : 0.49230769230769234,
+    "ay" : 0.91666666666666663,
+    "file" : "person\/baby-boy-side.png",
+    "frames" : 5,
+    "h" : 96,
+    "scale" : 0.5,
+    "w" : 130
+  },
+  "person\/baby-boy-side-color" : {
+    "ax" : 0.49230769230769234,
+    "ay" : 0.91666666666666663,
+    "file" : "person\/baby-boy-side-color.png",
+    "frames" : 5,
+    "h" : 96,
+    "scale" : 0.5,
+    "w" : 130
+  },
+  "person\/baby-girl-side" : {
+    "ax" : 0.49230769230769234,
+    "ay" : 0.91666666666666663,
+    "file" : "person\/baby-girl-side.png",
+    "frames" : 5,
+    "h" : 96,
+    "scale" : 0.5,
+    "w" : 130
+  },
+  "person\/baby-girl-side-color" : {
+    "ax" : 0.49230769230769234,
+    "ay" : 0.91666666666666663,
+    "file" : "person\/baby-girl-side-color.png",
+    "frames" : 5,
+    "h" : 96,
+    "scale" : 0.5,
+    "w" : 130
+  },
+  "person\/boy-back" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/boy-back.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/boy-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/boy-back-color.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/boy-front" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/boy-front.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/boy-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/boy-front-color.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/boy-side" : {
+    "ax" : 0.42307692307692307,
+    "ay" : 0.953125,
+    "file" : "person\/boy-side.png",
+    "frames" : 29,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 104
+  },
+  "person\/boy-side-color" : {
+    "ax" : 0.42307692307692307,
+    "ay" : 0.953125,
+    "file" : "person\/boy-side-color.png",
+    "frames" : 29,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 104
+  },
+  "person\/girl-back" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/girl-back.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/girl-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/girl-back-color.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/girl-front" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/girl-front.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/girl-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.953125,
+    "file" : "person\/girl-front-color.png",
+    "frames" : 16,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 88
+  },
+  "person\/girl-side" : {
+    "ax" : 0.42307692307692307,
+    "ay" : 0.953125,
+    "file" : "person\/girl-side.png",
+    "frames" : 29,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 104
+  },
+  "person\/girl-side-color" : {
+    "ax" : 0.42307692307692307,
+    "ay" : 0.953125,
+    "file" : "person\/girl-side-color.png",
+    "frames" : 29,
+    "h" : 128,
+    "scale" : 0.5,
+    "w" : 104
+  },
+  "person\/man-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/man-king-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-king-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-king-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/man-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/man-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/warrior-king-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-king-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-king-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/warrior-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/warrior-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/woman-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-back" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-back.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-back-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-back-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-front" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-front.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-front-color" : {
+    "ax" : 0.5,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-front-color.png",
+    "frames" : 16,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 128
+  },
+  "person\/woman-queen-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/woman-queen-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-queen-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/woman-side" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-side.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  },
+  "person\/woman-side-color" : {
+    "ax" : 0.30612244897959184,
+    "ay" : 0.96153846153846156,
+    "file" : "person\/woman-side-color.png",
+    "frames" : 29,
+    "h" : 208,
+    "scale" : 0.5,
+    "w" : 196
+  }
+}
